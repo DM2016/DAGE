@@ -1,0 +1,20 @@
+#!/bin/bash
+DIR=/Users/dichenli/Documents/TPOT_project/tryScalaSpark
+DATADIR=/Users/dichenli/Documents/TPOT_project/VCF_VEP
+SUBMIT=/usr/local/Cellar/apache-spark/1.6.0/bin/spark-submit
+JAR_DIR=$DIR/target/scala-2.10/Simple_Project-assembly-1.0.jar
+
+sudo rm -rf $DATADIR/spark_results
+cd $DIR
+sbt assembly
+
+if [ -n "$1" ]; then 
+  time sudo $SUBMIT --class $1 $JAR_DIR
+else
+  time sudo $SUBMIT $JAR_DIR
+fi
+
+cd $DATADIR
+./merge_partitions
+ls -lh diff.txt
+say "done"
