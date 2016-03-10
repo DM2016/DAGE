@@ -1,11 +1,11 @@
 #!/bin/bash
-DIR=/Users/dichenli/Documents/TPOT_project/tryScalaSpark
+DIR=/Users/dichenli/Documents/TPOT_project/DAGE/ScalaSparkDAGE
 DATADIR=/Users/dichenli/Documents/TPOT_project/VCF_VEP
 SUBMIT=/usr/local/Cellar/apache-spark/1.6.0/bin/spark-submit
-JAR_DIR=$DIR/target/scala-2.10/Simple_Project-assembly-1.0.jar
+JAR_DIR=$DIR/target/scala-2.10/Simple_Project-assembly-0.0.1.jar
 
 sudo rm -rf $DATADIR/spark_results
-cd $DIR
+
 sbt assembly
 
 if [ -n "$1" ]; then 

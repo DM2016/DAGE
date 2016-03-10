@@ -7,7 +7,7 @@ KEYSPACE = "vep_1kgp"
 TABLE = "vep_annotation"
 
 
-cluster = Cluster(contact_points=["54.164.197.70"])
+cluster = Cluster(contact_points=["54.175.83.232"])
 session = cluster.connect()
 print "Connection established"
 start_time = datetime.now()
@@ -45,6 +45,8 @@ for line in f:
     value = list[4]
     insert(key, value)
     count = count + 1
+    if count % 100 == 0:
+        print count
 f.close()
 end_time = datetime.now()
 print str(count) + " rows inserted, time used: " + str(end_time - start_time)

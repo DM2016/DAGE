@@ -1,0 +1,7 @@
+#!/bin/bash
+DIR=/Users/dichenli/Documents/TPOT_project/DAGE/ScalaSparkDAGE
+
+cd $DIR
+sbt assembly
+aws s3 cp ./target/scala-2.10/Simple_Project-assembly-0.0.1.jar s3://dage-spark-data/jars/Simple_Project-assembly-0.0.1.jar
+/users/dichenli/.ec2/scp_trycassandra_0 ./target/scala-2.10/Simple_Project-assembly-0.0.1.jar

@@ -7,20 +7,19 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
   * Created by dichenli on 2/28/16.
   */
-object Main {
+object MainEmr {
 
   def main(args: Array[String]) {
-
+    println("start")
     val conf = new SparkConf(true).setAppName("VCF VEP annotation")
-      .set("spark.cassandra.connection.host", "127.0.0.1")
+      .set("spark.cassandra.connection.host", "54.175.83.232")
     val sc = new SparkContext(conf)  //spark context
+    sc.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Secrets.aws_access_key_id)
+    sc.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Secrets.aws_secret_access_key)
 
-
-    val protocol = "file://"
-    val dataDir = "/Users/dichenli/Documents/TPOT_project/VCF_VEP/"
-    val inputFile = sc.textFile(protocol + dataDir +
-      "first_ten_thousand_lines_of_1kGP_chr1.vcf").cache()
-
+    println("conf done")
+    val inputFile = sc.textFile(Secrets.input_file_path).cache()
+    println("read input done")
     // Split one RDD to two by a filter function. code snippet copied from
     // http://stackoverflow.com/questions/29547185/apache-spark-rdd-filter-into-two-rdds
     implicit class RDDOps[T](rdd: RDD[T]) {
@@ -53,8 +52,8 @@ object Main {
       val formatter = new DecimalFormat("#.###")
       def toVCFString = (
         Array(chrom.toString, pos.toString, id, ref, alt,
-        formatter.format(qual).toString, filter, info) ++ genotypes
-      ).mkString("\t") 
+          formatter.format(qual).toString, filter, info) ++ genotypes
+        ).mkString("\t")
     }//TODO Array and mkString is slow. There is too many useless work following split("\t"), we only need three splits
 
     val vcf = body.map(_.split('\t')).map(
@@ -63,10 +62,11 @@ object Main {
         line(6), line(7), line.drop(8))
     )
 
-
+    println("start read cassandra")
     //cassandra DB as a RDD
     val vepDB = sc.cassandraTable("vep_1kgp", "vep_annotation")
       .map(row => (row.get[String]("key"), row.get[String]("value")))
+    println("read cassandra done")
 
     //query cassandra database
     def extractKey(line:VCFLine) = line.chrom.toString + '_' + line.pos.toString + '_' +
@@ -82,11 +82,11 @@ object Main {
     val vepBody = queried.map(pair => processQueriedData(pair._2._1, pair._2._2))
       .sortBy(_.pos).map(_.toVCFString)
 
-
     val output = vepHeader ++ vepBody
-    val outputDir = protocol + dataDir + "spark_results"
-    output.saveAsTextFile(outputDir)
 
+    println("start open output")
+    output.saveAsTextFile(Secrets.output_dir_path)
+    println("all done")
   }
 
 }
