@@ -7,12 +7,12 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
   * Created by dichenli on 2/28/16.
   */
-object MainEmr {
+object MainRemote {
 
   def main(args: Array[String]) {
     println("start")
     val conf = new SparkConf(true).setAppName("VCF VEP annotation")
-      .set("spark.cassandra.connection.host", "54.175.83.232")
+      .set("spark.cassandra.connection.host", "52.91.205.242")
     val sc = new SparkContext(conf)  //spark context
     sc.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", Secrets.aws_access_key_id)
     sc.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", Secrets.aws_secret_access_key)

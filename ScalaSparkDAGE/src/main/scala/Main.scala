@@ -12,7 +12,7 @@ object Main {
   def main(args: Array[String]) {
 
     val conf = new SparkConf(true).setAppName("VCF VEP annotation")
-      .set("spark.cassandra.connection.host", "127.0.0.1")
+      .set("spark.cassandra.connection.host", "54.175.83.232")
     val sc = new SparkContext(conf)  //spark context
 
 

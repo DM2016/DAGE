@@ -6,12 +6,13 @@ from datetime import datetime
 KEYSPACE = "vep_1kgp"
 TABLE = "vep_annotation"
 
-
-cluster = Cluster(contact_points=["54.175.83.232"])
+#TODO change contact points
+cluster = Cluster(contact_points=["52.201.222.237", "52.91.205.242"])
 session = cluster.connect()
 print "Connection established"
 start_time = datetime.now()
 
+# TODO change class and rep-factor before real population job
 # create KEYSPACE https://docs.datastax.com/en/cql/3.1/cql/cql_reference/create_keyspace_r.html
 # SimpleStrategy https://docs.datastax.com/en/cassandra/1.2/cassandra/architecture/architectureDataDistributeReplication_c.html
 session.execute(
@@ -32,7 +33,7 @@ def insert(k, v):
         (k, v)
     )
 
-
+#TODO support multiple files
 dataDir = "/Users/dichenli/Documents/TPOT_project/VCF_VEP/"
 f = open(dataDir + 'key_value_pairs', 'r')
 count = 0
@@ -51,7 +52,7 @@ f.close()
 end_time = datetime.now()
 print str(count) + " rows inserted, time used: " + str(end_time - start_time)
 
-
+#read 5 lines, just to assure writing is successful
 rows = session.execute("SELECT * FROM " + TABLE + " limit 5")
 
 for row in rows:

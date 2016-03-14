@@ -3,5 +3,8 @@ DIR=/Users/dichenli/Documents/TPOT_project/DAGE/ScalaSparkDAGE
 
 cd $DIR
 sbt assembly
+# delete folder, this is necessary because spark will fail if output directory already exists
+aws s3 rm s3://dage-spark-data/output/vep1 --recursive
+aws s3 mb s3://dage-spark-data/output/
 aws s3 cp ./target/scala-2.10/Simple_Project-assembly-0.0.1.jar s3://dage-spark-data/jars/Simple_Project-assembly-0.0.1.jar
-/users/dichenli/.ec2/scp_trycassandra_0 ./target/scala-2.10/Simple_Project-assembly-0.0.1.jar
+# /users/dichenli/.ec2/scp_trycassandra_0 ./target/scala-2.10/Simple_Project-assembly-0.0.1.jar
