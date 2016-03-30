@@ -2,3 +2,5 @@ target/*
 project/target/*
 project/project/target/*
 /src/main/scala/Secrets.scala
+spsubmit.sh
+assembleAWS.sh

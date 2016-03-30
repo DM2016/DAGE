@@ -40,18 +40,19 @@ object Annotation {
     def extractKey(line:VCFLine) = line.chrom.toString + '_' + line.pos.toString + '_' +
       line.ref + '_' +  line.alt.toString
     val queried = vcfBody.map(vcfLine => (extractKey(vcfLine), vcfLine)).leftOuterJoin(vepKV)
+
     //after query, deal with hit and miss separately
     def processQueriedData(line:VCFLine, annotation:Option[String]) = annotation match {
-      case None => line //cassandra query miss. Do nothing for now.
+      case None => line //cassandra query miss. Do nothing
       // How to initiate Ensembl VEP query?
       case Some(str) => VCFLine(line.chrom, line.pos, line.id, line.ref, line.alt, line.qual,
         line.filter, line.info + ";" + str.trim, line.genotypes)
     }
+
     val vepBody = queried.map(pair => processQueriedData(pair._2._1, pair._2._2))
 //            .sortBy(_.pos)
       .map(_.toVCFString)
 
-//    processedMetaHeader ++ vepBody
     //prepend meta and header info to each partition
     vepBody.mapPartitions(iter => Iterator(processedMetaHeader) ++ iter)
   }

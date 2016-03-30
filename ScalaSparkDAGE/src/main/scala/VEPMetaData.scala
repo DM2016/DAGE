@@ -26,6 +26,3 @@ object VEPMetaData {
       "SYMBOL_SOURCE|HGNC_ID|LoF_flags|LoF_filter|LoF_info|LoF\">"
   )
 }
-
-//DAGE distributed annotation of genetic effects: sotware name
-//VepDB
