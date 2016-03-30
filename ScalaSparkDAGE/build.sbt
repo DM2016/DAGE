@@ -12,14 +12,17 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "1.6.0" % "provided",
   "org.apache.spark" %% "spark-sql" % "1.6.0" % "provided",
   "com.datastax.spark" %% "spark-cassandra-connector" % "1.5.0"
+//  "com.github.seratch" %% "awscala" % "0.5.+"
 )
 
 // META-INF discarding
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-  case x => MergeStrategy.first
+  case x => MergeStrategy.last
 }
 
-
+assemblyShadeRules in assembly := Seq(
+  ShadeRule.rename("com.google.**" -> "shadeio.@1").inAll
+)
 
 

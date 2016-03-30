@@ -1,0 +1,87 @@
+##contig=<ID=GL000241.1,assembly=b37,length=42152>
+##contig=<ID=GL000242.1,assembly=b37,length=43523>
+##contig=<ID=GL000243.1,assembly=b37,length=43341>
+##contig=<ID=GL000244.1,assembly=b37,length=39929>
+##contig=<ID=GL000245.1,assembly=b37,length=36651>
+##contig=<ID=GL000246.1,assembly=b37,length=38154>
+##contig=<ID=GL000247.1,assembly=b37,length=36422>
+##contig=<ID=GL000248.1,assembly=b37,length=39786>
+##contig=<ID=GL000249.1,assembly=b37,length=38502>
+##contig=<ID=MT,assembly=b37,length=16569>
+##contig=<ID=NC_007605,assembly=b37,length=171823>
+##contig=<ID=X,assembly=b37,length=155270560>
+##contig=<ID=Y,assembly=b37,length=59373566>
+##contig=<ID=hs37d5,assembly=b37,length=35477943>
+##ALT=<ID=CNV,Description="Copy Number Polymorphism">
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=DUP,Description="Duplication">
+##ALT=<ID=INS:ME:ALU,Description="Insertion of ALU element">
+##ALT=<ID=INS:ME:LINE1,Description="Insertion of LINE1 element">
+##ALT=<ID=INS:ME:SVA,Description="Insertion of SVA element">
+##ALT=<ID=INS:MT,Description="Nuclear Mitochondrial Insertion">
+##ALT=<ID=INV,Description="Inversion">
+##ALT=<ID=CN0,Description="Copy number allele: 0 copies">
+##ALT=<ID=CN1,Description="Copy number allele: 1 copy">
+##ALT=<ID=CN2,Description="Copy number allele: 2 copies">
+##ALT=<ID=CN3,Description="Copy number allele: 3 copies">
+##ALT=<ID=CN4,Description="Copy number allele: 4 copies">
+##ALT=<ID=CN5,Description="Copy number allele: 5 copies">
+##ALT=<ID=CN6,Description="Copy number allele: 6 copies">
+##ALT=<ID=CN7,Description="Copy number allele: 7 copies">
+##ALT=<ID=CN8,Description="Copy number allele: 8 copies">
+##ALT=<ID=CN9,Description="Copy number allele: 9 copies">
+##ALT=<ID=CN10,Description="Copy number allele: 10 copies">
+##ALT=<ID=CN11,Description="Copy number allele: 11 copies">
+##ALT=<ID=CN12,Description="Copy number allele: 12 copies">
+##ALT=<ID=CN13,Description="Copy number allele: 13 copies">
+##ALT=<ID=CN14,Description="Copy number allele: 14 copies">
+##ALT=<ID=CN15,Description="Copy number allele: 15 copies">
+##ALT=<ID=CN16,Description="Copy number allele: 16 copies">
+##ALT=<ID=CN17,Description="Copy number allele: 17 copies">
+##ALT=<ID=CN18,Description="Copy number allele: 18 copies">
+##ALT=<ID=CN19,Description="Copy number allele: 19 copies">
+##ALT=<ID=CN20,Description="Copy number allele: 20 copies">
+##ALT=<ID=CN21,Description="Copy number allele: 21 copies">
+##ALT=<ID=CN22,Description="Copy number allele: 22 copies">
+##ALT=<ID=CN23,Description="Copy number allele: 23 copies">
+##ALT=<ID=CN24,Description="Copy number allele: 24 copies">
+##ALT=<ID=CN25,Description="Copy number allele: 25 copies">
+##ALT=<ID=CN26,Description="Copy number allele: 26 copies">
+##ALT=<ID=CN27,Description="Copy number allele: 27 copies">
+##ALT=<ID=CN28,Description="Copy number allele: 28 copies">
+##ALT=<ID=CN29,Description="Copy number allele: 29 copies">
+##ALT=<ID=CN30,Description="Copy number allele: 30 copies">
+##ALT=<ID=CN31,Description="Copy number allele: 31 copies">
+##ALT=<ID=CN32,Description="Copy number allele: 32 copies">
+##ALT=<ID=CN33,Description="Copy number allele: 33 copies">
+##ALT=<ID=CN34,Description="Copy number allele: 34 copies">
+##ALT=<ID=CN35,Description="Copy number allele: 35 copies">
+##ALT=<ID=CN36,Description="Copy number allele: 36 copies">
+##ALT=<ID=CN37,Description="Copy number allele: 37 copies">
+##ALT=<ID=CN38,Description="Copy number allele: 38 copies">
+##ALT=<ID=CN39,Description="Copy number allele: 39 copies">
+##ALT=<ID=CN40,Description="Copy number allele: 40 copies">
+##ALT=<ID=CN41,Description="Copy number allele: 41 copies">
+##ALT=<ID=CN42,Description="Copy number allele: 42 copies">
+##ALT=<ID=CN43,Description="Copy number allele: 43 copies">
+##ALT=<ID=CN44,Description="Copy number allele: 44 copies">
+##ALT=<ID=CN45,Description="Copy number allele: 45 copies">
+##ALT=<ID=CN46,Description="Copy number allele: 46 copies">
+##ALT=<ID=CN47,Description="Copy number allele: 47 copies">
+##ALT=<ID=CN48,Description="Copy number allele: 48 copies">
+##ALT=<ID=CN49,Description="Copy number allele: 49 copies">
+##ALT=<ID=CN50,Description="Copy number allele: 50 copies">
+##ALT=<ID=CN51,Description="Copy number allele: 51 copies">
+##ALT=<ID=CN52,Description="Copy number allele: 52 copies">
+##ALT=<ID=CN53,Description="Copy number allele: 53 copies">
+##ALT=<ID=CN54,Description="Copy number allele: 54 copies">
+##ALT=<ID=CN55,Description="Copy number allele: 55 copies">
+##ALT=<ID=CN56,Description="Copy number allele: 56 copies">
+##ALT=<ID=CN57,Description="Copy number allele: 57 copies">
+##ALT=<ID=CN58,Description="Copy number allele: 58 copies">
+##ALT=<ID=CN59,Description="Copy number allele: 59 copies">
+##ALT=<ID=CN60,Description="Copy number allele: 60 copies">
+##ALT=<ID=CN61,Description="Copy number allele: 61 copies">
+##ALT=<ID=CN62,Description="Copy number allele: 62 copies">
+##ALT=<ID=CN63,Description="Copy number allele: 63 copies">
+##ALT=<ID=CN64,Description="Copy number allele: 64 copies">
