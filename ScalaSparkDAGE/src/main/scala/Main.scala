@@ -57,7 +57,7 @@ object Main {
       .map(row => (row.get[String]("key"), row.get[String]("value")))
     val vepMetaHeader = sc.parallelize(VEPMetaData.metadata)
 
-    val output = Annotation.annotate(inputRDD, vepDB, vepMetaHeader)
+    val output = Annotation.annotate(inputRDD, vepDB, vepMetaHeader, jobConfig)
     output.saveAsTextFile(jobConfig.output)
   }
 

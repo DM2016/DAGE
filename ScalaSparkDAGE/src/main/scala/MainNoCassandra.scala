@@ -26,7 +26,7 @@ object MainNoCassandra {
     //add more metadata to header
     val vepMetaHeader = sc.parallelize(VEPMetaData.metadata)
 
-    val output = Annotation.annotate(inputFile, vepDB, vepMetaHeader)
+    val output = Annotation.annotate(inputFile, vepDB, vepMetaHeader, Config())
 
     val outputDir = protocol + dataDir + "spark_results"
     output.saveAsTextFile(outputDir)
