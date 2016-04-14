@@ -1,5 +1,5 @@
-import _root_.AnnotationHelper._
-import _root_.VCFMetaHeader._
+import AnnotationHelper._
+import VCFMetaHeader._
 import com.datastax.spark.connector._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
@@ -42,8 +42,8 @@ object Main {
 
   case class VepKey(key: String)
 
-  def annotate(vcf: RDD[String], vepKV: RDD[(String, String)],
-               vepMetaHeader: RDD[String], jobConfig: Config): (RDD[String], RDD[String]) = {
+  def annotate(vcf: RDD[String], vepMetaHeader: RDD[String],
+               jobConfig: Config): (RDD[String], RDD[String]) = {
 
     //separate header and body
     val (metaHeader, body) = vcf.partitionBy(_.startsWith("#"))
@@ -51,15 +51,23 @@ object Main {
     //process header
     val processedMetaHeader = processMetaAndHeader(metaHeader, vepMetaHeader)
 
+    val vcfLines = body.map(parseVcfLine)
+    //https://github.com/datastax/spark-cassandra-connector/blob/master/doc/2_loading.md#join-with-a-generic-rdd-after-repartitioning
+    //I choose not to repartition before joining because now every node holds 100% of data.
+    //But we may need to change the code if the DB expands.
+    val vepKV = vcfLines.map(vcfLine => VepKey(vcfLine.annotationKey))
+      .joinWithCassandraTable(jobConfig.keySpace, jobConfig.tableName)
+      .map {case (vepKey, cassandraRow) => (vepKey.key, cassandraRow.get[String]("value"))}
+
     //annotate each VCF line by VepDB
     var queried: RDD[(String, (RawVCFLine, Option[String]))] =
-      body.map(parseVcfLine).map(vcfLine => (vcfLine.annotationKey, vcfLine)).leftOuterJoin(vepKV)
+      vcfLines.map(vcfLine => (vcfLine.annotationKey, vcfLine)).leftOuterJoin(vepKV)
     if (jobConfig.sort) {
       queried = queried.sortBy(_._2._1.position)
     }
-    if (queried.getNumPartitions > 10) {
-      queried = queried.coalesce(10, shuffle = false)
-    }
+//    if (queried.getNumPartitions > 10) {
+//      queried = queried.coalesce(10, shuffle = false)
+//    }
     val vepBody = queried.map(pair => matchVepVcfLine(pair._2._1, pair._2._2)).map(_.toVCFString)
     val miss = queried.filter(pair => pair._2._2.isEmpty).keys //keys not seen in vepDB
 
@@ -81,11 +89,9 @@ object Main {
     }
 
     val inputRDD = sc.textFile(jobConfig.input).cache()
-    val vepDB = sc.cassandraTable(jobConfig.keySpace, jobConfig.tableName)
-      .map(row => (row.get[String]("key"), row.get[String]("value")))
     val vepMetaHeader = sc.parallelize(VEPMetaData.metadata)
 
-    val (output, miss) = annotate(inputRDD, vepDB, vepMetaHeader, jobConfig)
+    val (output, miss) = annotate(inputRDD, vepMetaHeader, jobConfig)
     output.saveAsTextFile(jobConfig.output)
   }
 

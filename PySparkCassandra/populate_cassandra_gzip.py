@@ -56,3 +56,4 @@ for line in f:
 f.close()
 print str(count) + " rows inserted, time spent: " + str(datetime.now() - start_time)
 
+# 84801901 rows inserted, time spent: 1 day, 23:41:03.094630
