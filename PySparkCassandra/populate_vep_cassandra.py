@@ -7,7 +7,7 @@ KEYSPACE = "vep_1kgp"
 TABLE = "vep_annotation"
 
 #TODO change contact points
-cluster = Cluster(contact_points=["54.175.181.231", "54.172.223.237"])
+cluster = Cluster(contact_points=["52.71.252.17"])
 session = cluster.connect()
 print "Connection established"
 start_time = datetime.now()
@@ -17,7 +17,7 @@ start_time = datetime.now()
 # SimpleStrategy https://docs.datastax.com/en/cassandra/1.2/cassandra/architecture/architectureDataDistributeReplication_c.html
 session.execute(
     "CREATE KEYSPACE IF NOT EXISTS " + KEYSPACE +
-    " WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1 }"
+    " WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 2 }"
 )
 session.set_keyspace(KEYSPACE)
 
