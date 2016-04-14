@@ -1,8 +1,8 @@
-import java.text.DecimalFormat
+import _root_.AnnotationHelper._
+import _root_.VCFMetaHeader._
 import com.datastax.spark.connector._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
-import java.io.File
 
 /**
   * Created by dichenli on 2/28/16.
@@ -40,6 +40,34 @@ object Main {
     help("help") text("prints this usage text")
   }
 
+  case class VepKey(key: String)
+
+  def annotate(vcf: RDD[String], vepKV: RDD[(String, String)],
+               vepMetaHeader: RDD[String], jobConfig: Config): (RDD[String], RDD[String]) = {
+
+    //separate header and body
+    val (metaHeader, body) = vcf.partitionBy(_.startsWith("#"))
+
+    //process header
+    val processedMetaHeader = processMetaAndHeader(metaHeader, vepMetaHeader)
+
+    //annotate each VCF line by VepDB
+    var queried: RDD[(String, (RawVCFLine, Option[String]))] =
+      body.map(parseVcfLine).map(vcfLine => (vcfLine.annotationKey, vcfLine)).leftOuterJoin(vepKV)
+    if (jobConfig.sort) {
+      queried = queried.sortBy(_._2._1.position)
+    }
+    if (queried.getNumPartitions > 10) {
+      queried = queried.coalesce(10, shuffle = false)
+    }
+    val vepBody = queried.map(pair => matchVepVcfLine(pair._2._1, pair._2._2)).map(_.toVCFString)
+    val miss = queried.filter(pair => pair._2._2.isEmpty).keys //keys not seen in vepDB
+
+    //prepend meta and header info to each partition
+    val vepVcf = vepBody.mapPartitions(partition => Iterator(processedMetaHeader) ++ partition)
+    (vepVcf, miss) //return
+  }
+
   def initSpark(jobConfig: Config): Unit = {
     val sparkConf = new SparkConf(true).setAppName("DAGE VCF VEP annotation")
       .set("spark.cassandra.connection.host", jobConfig.host)
@@ -57,7 +85,7 @@ object Main {
       .map(row => (row.get[String]("key"), row.get[String]("value")))
     val vepMetaHeader = sc.parallelize(VEPMetaData.metadata)
 
-    val output = Annotation.annotate(inputRDD, vepDB, vepMetaHeader, jobConfig)
+    val (output, miss) = annotate(inputRDD, vepDB, vepMetaHeader, jobConfig)
     output.saveAsTextFile(jobConfig.output)
   }
 
@@ -65,7 +93,7 @@ object Main {
     parser.parse(args, Config()) map { config =>
       initSpark(config)
     } getOrElse {
-      // arguments are bad, usage message will have been displayed
+      // arguments are bad, usage message will be displayed
       print("Invalid configuration")
     }
   }
