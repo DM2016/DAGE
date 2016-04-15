@@ -20,8 +20,6 @@ object Annotation {
     }
   }
 
-  case class VepKey(key: String)
-
   abstract class VCFLine {
     def toVCFString: String
     val position: Long
@@ -56,14 +54,14 @@ object Annotation {
   /**
     *
     * @param dbQuery a function to get all annotations data of the vcf lines from a DB
-    * @param vcf
-    * @param vepMetaHeader
-    * @param jobConfig
-    * @return
+    * @param vcf RDD of raw VCF file
+    * @param vepMetaHeader the metadata lines (## lines) about VEP to be inserted
+    * @param sort if true, keep the original order of VCF file
+    * @return (vepVcf, miss). vepVcf: raw vcf lines with vep annotation. miss: keys not found in DB
     */
   def annotate(dbQuery: RDD[RawVCFLine] => RDD[(String, String)])
               (vcf: RDD[String], vepMetaHeader: RDD[String],
-               jobConfig: Config): (RDD[String], RDD[String]) = {
+               sort: Boolean): (RDD[String], RDD[String]) = {
 
     //separate header and body
     val (metaHeader, body) = vcf.partitionBy(_.startsWith("#"))
@@ -78,7 +76,7 @@ object Annotation {
     //annotate each VCF line by VepDB
     var annotated: RDD[(String, (RawVCFLine, Option[String]))] =
       vcfLines.map(vcfLine => (vcfLine.annotationKey, vcfLine)).leftOuterJoin(vepKV)
-    if (jobConfig.sort) {
+    if (sort) {
       annotated = annotated.sortBy(_._2._1.position)
     }
     val vepBody = annotated.map(pair => matchVepVcfLine(pair._2._1, pair._2._2)).map(_.toVCFString)

@@ -10,6 +10,6 @@ case class Config (
                     port: String = null, //cassandra port
                     keySpace: String = "vep_1kgp",
                     tableName: String = "vep_annotation",
-                    sort: Boolean = false //if a sort of vep.vcf is conducted
+                    sort: Boolean = false //if true, keep the original order of VCF file by an expensive sort operation
                   )
 

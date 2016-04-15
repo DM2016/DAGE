@@ -40,6 +40,7 @@ object Main {
   }
 
 
+  case class VepKey(key: String) //necessary for a joinWithCassandraTable call
   def dbQueryCassandra(jobConfig: Config)(vcfLines: RDD[RawVCFLine]): RDD[(String, String)] = {
     //https://github.com/datastax/spark-cassandra-connector/blob/master/doc/2_loading.md#join-with-a-generic-rdd-after-repartitioning
     //I choose not to repartition before joining because now every node holds 100% of data.
@@ -64,7 +65,7 @@ object Main {
     val inputRDD = sc.textFile(jobConfig.input).cache()
     val vepMetaHeader = sc.parallelize(VEPMetaData.metadata)
 
-    val (output, miss) = annotate(dbQueryCassandra(jobConfig))(inputRDD, vepMetaHeader, jobConfig)
+    val (output, miss) = annotate(dbQueryCassandra(jobConfig))(inputRDD, vepMetaHeader, jobConfig.sort)
     output.saveAsTextFile(jobConfig.output)
   }
 
