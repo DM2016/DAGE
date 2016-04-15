@@ -1,5 +1,5 @@
 import org.apache.spark.rdd.RDD
-import AnnotationHelper._
+import Annotation._
 
 /**
   * Created by dichenli on 3/28/16.
