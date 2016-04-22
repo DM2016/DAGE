@@ -1,1 +1,0 @@
-CREATE KEYSPACE vep_annotation WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1 };

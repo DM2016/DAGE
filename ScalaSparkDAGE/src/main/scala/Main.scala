@@ -9,6 +9,10 @@ import org.apache.spark.{SparkConf, SparkContext}
   */
 object Main {
 
+  /**
+    * parse command line arguments by scopt
+    * https://github.com/scopt/scopt
+    */
   val parser = new scopt.OptionParser[Config]("scopt") {
     head("dage", "0.0.1")
     note("DAGE: Distributed Annotation of Genetic Effects\n")
