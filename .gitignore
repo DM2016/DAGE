@@ -2,6 +2,5 @@
 notes
 **/.idea
 foxyproxy-settings.xml
-*.yaml
-*.yaml.temp
+*.yaml*
 *.pyc

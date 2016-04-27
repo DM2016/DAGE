@@ -1,12 +1,16 @@
+import os
+
 __author__ = 'dichenli'
 import re
-from os import close
+import sys
+from time import gmtime, strftime
 
-yaml = "/Users/dichenli/Documents/TPOT_project/DAGE/cassandraBoot/cassandra.yaml"
+yaml = sys.argv[1]
 new_yaml = yaml + ".temp"
-ip = "127.0.0.1"
-seeds = "127.0.0.1"
+ip = sys.argv[2]
+seeds = sys.argv[3]
 
+print "Setting Cassandra.yaml"
 listen_address_regex = re.compile(r"(^ *listen_address: *)(.*)($)")
 rpc_address_regex = re.compile(r"(^ *rpc_address: *)(.*)($)")
 seeds_regex = re.compile(r'(^.*- seeds: \")(.*)(\".*$)')
@@ -17,4 +21,8 @@ with open(yaml) as old_file:
             line = rpc_address_regex.sub(r'\g<1>%s\g<3>' % ip, line)
             line = seeds_regex.sub(r'\g<1>%s\g<3>' % seeds, line)
             new_file.write(line)
+        new_file.close()
+        old_file.close()
 
+os.rename(yaml, yaml + strftime("%Y-%m-%d %H-%M-%S", gmtime()) + '.bak')
+os.rename(new_yaml, yaml)

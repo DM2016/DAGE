@@ -1,3 +1,5 @@
+import os
+
 __author__ = 'dichenli'
 
 import boto3
@@ -6,6 +8,20 @@ import datetime
 from dateutil import tz
 import time
 import sys
+import paramiko
+from scp import SCPClient
+
+
+class SshKey:
+    def __init__(self, key_name=None, file_path=None):
+        self.key_name = key_name
+        self.file_path = file_path
+
+    def name(self):
+        return self.key_name
+
+    def path(self):
+        return self.file_path
 
 
 class Ec2State(Enum):
@@ -27,7 +43,7 @@ class Ec2Instance:
         response = self.ec2_client.run_instances(
             DryRun=False, ImageId=self.image_id,
             MinCount=1, MaxCount=1,
-            KeyName=self.key_name,
+            KeyName=self.ssh_key.name(),
             SecurityGroups=[self.security_group],
             InstanceType=self.instance_type,
             BlockDeviceMappings=[{
@@ -43,11 +59,9 @@ class Ec2Instance:
         if len(instances) > 0:
             self.instance_id = instances[0][u'InstanceId']
             self.state = Ec2State.pending
-            print "Waiting until instance is running"
-            self.wait_until_instance_running()
-            self.update_profile()
         else:
             raise Ec2FailureException('Failed to launch the instance!')
+        return self
 
     def is_running(self):
         response = self.ec2_client.describe_instance_status(InstanceIds=[self.instance_id])
@@ -69,6 +83,7 @@ class Ec2Instance:
         self.private_ip = self.instance_profile[u'PrivateIpAddress']
         if u'PublicIpAddress' in self.instance_profile:
             self.public_ip = self.instance_profile[u'PublicIpAddress']
+        return self
 
     def get_private_ip(self):
         if self.private_ip is None:
@@ -88,6 +103,8 @@ class Ec2Instance:
             sys.stdout.write('.')
             time.sleep(5)
         self.update_profile()
+        sys.stdout.write('\n')
+        return self
 
     def tag_instance(self, key, value):
         if self.state == Ec2State.unavailable:
@@ -99,10 +116,33 @@ class Ec2Instance:
                 'Value': value
             }]
         )
+        return self
+
+    def connect_ssh(self):
+        if not self.is_running():
+            raise Ec2FailureException('Cannot ssh to a instance not running yet')
+        self.ssh_client = paramiko.SSHClient()
+        self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh_client.connect(self.get_public_ip(), username=self.user_name,
+                         key_filename=os.path.expanduser(self.ssh_key.path()))
+        self.scp_client = SCPClient(self.ssh_client.get_transport())
+        return self
+
+    def scp(self, files, remote_path):
+        self.scp_client.put(files=files, remote_path=remote_path)
+        return self
+
+    def ssh_command(self, command):
+        stdin, stdout, stderr = self.ssh_client.exec_command(command)
+        return stdout.readlines(), stderr.readlines()
+
+    def close_ssh(self):
+        self.scp_client.close()
+        self.ssh_client.close()
 
     def __init__(self, boto_session=None, instance_id=None,
-                 image_id=None,
-                 key_name=None, security_group=None,
+                 image_id=None, user_name=None,
+                 ssh_key=None, security_group=None,
                  instance_type=None, volume_size=None):
         self.session = boto_session
         self.ec2_client = self.session.client('ec2')
@@ -112,11 +152,14 @@ class Ec2Instance:
         self.public_ip = None
         self.state = Ec2State.unavailable
         self.image_id = image_id
-        self.key_name = key_name
+        self.ssh_key = ssh_key
         self.security_group = security_group
         self.instance_type = instance_type
         self.volume_size = volume_size
+        self.ssh_client = None
+        self.scp_client = None
+        self.user_name = user_name
         if instance_id is not None:
-            self.is_running() # update instance state
+            self.is_running()  # update instance state
         if self.state is not Ec2State.unavailable:
             self.update_profile()
