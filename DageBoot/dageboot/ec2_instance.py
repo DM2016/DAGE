@@ -1,11 +1,7 @@
-import os
-
 __author__ = 'dichenli'
 
-import boto3
+import os
 from aenum import Enum
-import datetime
-from dateutil import tz
 import time
 import sys
 import paramiko
@@ -13,11 +9,11 @@ from scp import SCPClient
 
 
 class SshKey:
-    def __init__(self, key_name=None, file_path=None):
-        self.key_name = key_name
-        self.file_path = file_path
+    def __init__(self, ec2_key=None, key_file_path=None):
+        self.key_name = ec2_key
+        self.file_path = key_file_path
 
-    def name(self):
+    def key(self):
         return self.key_name
 
     def path(self):
@@ -43,7 +39,7 @@ class Ec2Instance:
         response = self.ec2_client.run_instances(
             DryRun=False, ImageId=self.image_id,
             MinCount=1, MaxCount=1,
-            KeyName=self.ssh_key.name(),
+            KeyName=self.ssh_key.key(),
             SecurityGroups=[self.security_group],
             InstanceType=self.instance_type,
             BlockDeviceMappings=[{

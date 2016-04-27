@@ -1,38 +1,41 @@
-import os
-
 __author__ = 'dichenli'
+
 '''Bootstrap cassandra from AMI, create a database that
 contains all vep annotation data'''
 
-import boto3
-import datetime
-from dateutil import tz
-import time
-import sys
-import paramiko
-from scp import SCPClient
 from ec2_instance import *
-
-session = boto3.Session(profile_name='aws150415', region_name='us-east-1')
-
-# metadata of the cluster
-ssh_key = SshKey(key_name='dage', file_path='/Users/dichenli/.ec2/dage.pem')
-ami_ids = ['ami-68243102', 'ami-7721341d']
-user_name = 'ec2-user'
-security_group = 'tryDatastaxCassnadraNVirginia'
-instance_type = 't2.micro'
-volume_size = 9
-cassandra_setup = '/Users/dichenli/Documents/TPOT_project/DAGE/cassandraBoot/cassandra_setup.py'
-cassandra_boot = '/Users/dichenli/Documents/TPOT_project/DAGE/cassandraBoot/cassandra_boot.sh'
+from cluster_metadata import *
+import boto3
+import pkg_resources, os
 
 
-def launch_cluster():
+def get_resource(folder, file_name):
+    return pkg_resources.resource_filename(__name__, os.path.join(folder, file_name))
+
+
+def launch_cluster(
+        ec2_key=None, key_file_path=None, aws_profile_name=None,
+        aws_access_key_id=None, aws_secret_access_key=None):
+    session = None
+    if aws_access_key_id is not None and aws_secret_access_key is not None:
+        session = boto3.Session(aws_access_key_id=aws_access_key_id,
+                                aws_secret_access_key=aws_secret_access_key,
+                                region_name=cluster['region_name'])
+    else:
+        session = boto3.Session(profile_name=aws_profile_name,
+                                region_name=cluster['region_name'])
+
+    ssh_key = SshKey(ec2_key=ec2_key, key_file_path=key_file_path)
+    cassandra_setup = get_resource('resources', 'cassandra_setup.py')
+    cassandra_boot = get_resource('resources', 'cassandra_boot.sh')
+    security_group = 'tryDatastaxCassnadraNVirginia'
+
     instances = map(
         lambda ami_id: Ec2Instance(
-            boto_session=session, image_id=ami_id, user_name=user_name,
+            boto_session=session, image_id=ami_id, user_name=cluster['user_name'],
             ssh_key=ssh_key, security_group=security_group,
-            instance_type=instance_type, volume_size=volume_size
-        ), ami_ids
+            instance_type=cluster['instance_type'], volume_size=cluster['volume_size']
+        ), cluster['ami_ids']
     )
     print "Launching instances"
     for index, instance in enumerate(instances):
@@ -50,8 +53,8 @@ def launch_cluster():
 
     # instances = map(
     #     lambda id: Ec2Instance(
-    #         boto_session=session, instance_id=id, user_name=user_name, ssh_key=ssh_key
-    #     ), ['i-32b425af', 'i-34b425a9']
+    #         boto_session=session, instance_id=id, user_name=cluster['user_name'], ssh_key=ssh_key
+    #     ), ['i-9fe06a18', 'i-2ae369ad']
     # )
 
     print "All instances ready"
@@ -67,10 +70,3 @@ def launch_cluster():
         print "remote execute: " + boot_cmd
         print instance.ssh_command(boot_cmd)
         instance.close_ssh()
-
-
-launch_cluster()
-
-# TODO: 2. setup security group
-# TODO: 3. launch spark with the information of the DB
-# TODO: 4. In a cassandra cluster with opscenter, set up cluster info file so that opscenter works out of box

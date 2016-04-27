@@ -1,0 +1,2 @@
+include dageboot/resources/cassandra_boot.sh
+include dageboot/resources/cassandra_setup.py

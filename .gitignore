@@ -4,3 +4,12 @@ notes
 foxyproxy-settings.xml
 *.yaml*
 *.pyc
+.installed.cfg
+bin
+develop-eggs
+dist
+eggs
+**/*.egg-info
+lib
+lib64
+build
