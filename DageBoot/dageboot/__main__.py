@@ -17,13 +17,8 @@ def main():
                         help='The AWS access key id')
     parser.add_argument('--aws-secret-access-key', type=str, default=None,
                         help='The AWS secret access key')
-
+    
     args = parser.parse_args()
-    print args
-    print args.aws_access_key_id
-    print args.aws_secret_access_key
-    print args.aws_profile_name
-
     launch_cluster(aws_access_key_id=args.aws_access_key_id,
                    aws_secret_access_key=args.aws_secret_access_key,
                    aws_profile_name=args.aws_profile_name,
@@ -37,12 +32,10 @@ if __name__ == "__main__":
 
 
 # must done:
-# TODO: use command line to offer parameters: ssh key pair, aws profile
 # TODO: setup security group
-# TODO: test to make sure it runs on a fresh computer with python 2.7, no need for user to install dependencies
 
 # very important to have
-# TODO: implement function to restart existing cluster (user need to provide ids)
+# TODO: implement function to restart existing cluster (user need to provide instance ids)
 # TODO: launch spark with the information of the DB
 # TODO: use command line to offer parameters: instance type, volume size
 # TODO: In a cassandra cluster with opscenter, set up cluster info file so that opscenter works out of box

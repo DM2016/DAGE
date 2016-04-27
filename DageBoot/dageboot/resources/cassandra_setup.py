@@ -10,7 +10,6 @@ new_yaml = yaml + ".temp"
 ip = sys.argv[2]
 seeds = sys.argv[3]
 
-print "Setting Cassandra.yaml"
 listen_address_regex = re.compile(r"(^ *listen_address: *)(.*)($)")
 rpc_address_regex = re.compile(r"(^ *rpc_address: *)(.*)($)")
 seeds_regex = re.compile(r'(^.*- seeds: \")(.*)(\".*$)')

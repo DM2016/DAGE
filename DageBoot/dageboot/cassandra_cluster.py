@@ -10,12 +10,15 @@ import pkg_resources, os
 
 
 def get_resource(folder, file_name):
+    """Use this method to get the absolute path of the static files
+    packed inside the package"""
     return pkg_resources.resource_filename(__name__, os.path.join(folder, file_name))
 
 
 def launch_cluster(
         ec2_key=None, key_file_path=None, aws_profile_name=None,
         aws_access_key_id=None, aws_secret_access_key=None):
+    """Launch a cassandra cluster with meta info available in cluster_metadata"""
     session = None
     if aws_access_key_id is not None and aws_secret_access_key is not None:
         session = boto3.Session(aws_access_key_id=aws_access_key_id,
@@ -30,32 +33,32 @@ def launch_cluster(
     cassandra_boot = get_resource('resources', 'cassandra_boot.sh')
     security_group = 'tryDatastaxCassnadraNVirginia'
 
-    instances = map(
-        lambda ami_id: Ec2Instance(
-            boto_session=session, image_id=ami_id, user_name=cluster['user_name'],
-            ssh_key=ssh_key, security_group=security_group,
-            instance_type=cluster['instance_type'], volume_size=cluster['volume_size']
-        ), cluster['ami_ids']
-    )
-    print "Launching instances"
-    for index, instance in enumerate(instances):
-        print "Launching instance " + str(index)
-        instance.launch_instance()
-    for index, instance in enumerate(instances):
-        print "Waiting until instance " + str(index) + " is ready"
-        instance.wait_until_instance_running()
-        print "Instance ready, id: %s, private ip: %s, public ip: %s" % (
-            instance.get_instance_id(),
-            instance.get_private_ip(),
-            instance.get_public_ip()
-        )
-        instance.tag_instance(key='Name', value='Cassandra_' + str(index))
-
     # instances = map(
-    #     lambda id: Ec2Instance(
-    #         boto_session=session, instance_id=id, user_name=cluster['user_name'], ssh_key=ssh_key
-    #     ), ['i-9fe06a18', 'i-2ae369ad']
+    #     lambda ami_id: Ec2Instance(
+    #         boto_session=session, image_id=ami_id, user_name=cluster['user_name'],
+    #         ssh_key=ssh_key, security_group=security_group,
+    #         instance_type=cluster['instance_type'], volume_size=cluster['volume_size']
+    #     ), cluster['ami_ids']
     # )
+    # print "Launching instances"
+    # for index, instance in enumerate(instances):
+    #     print "Launching instance " + str(index)
+    #     instance.launch_instance()
+    # for index, instance in enumerate(instances):
+    #     print "Waiting until instance " + str(index) + " is ready"
+    #     instance.wait_until_instance_running()
+    #     print "Instance ready, id: %s, private ip: %s, public ip: %s" % (
+    #         instance.get_instance_id(),
+    #         instance.get_private_ip(),
+    #         instance.get_public_ip()
+    #     )
+    #     instance.tag_instance(key='Name', value='Cassandra_' + str(index))
+
+    instances = map(
+        lambda id: Ec2Instance(
+            boto_session=session, instance_id=id, user_name=cluster['user_name'], ssh_key=ssh_key
+        ), ['i-9fe06a18', 'i-2ae369ad']
+    )
 
     print "All instances ready"
     seeds = '"' + ','.join(map(
@@ -68,5 +71,7 @@ def launch_cluster(
         instance.scp(files=cassandra_boot, remote_path='~/cassandra_boot.sh')
         boot_cmd = '~/cassandra_boot.sh ' + instance.get_private_ip() + ' ' + seeds
         print "remote execute: " + boot_cmd
-        print instance.ssh_command(boot_cmd)
+        stdout_lines, stderr_lines = instance.ssh_command(boot_cmd)
+        sys.stdout.write(''.join(stdout_lines))
+        sys.stderr.write(''.join(stderr_lines))
         instance.close_ssh()
