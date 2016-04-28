@@ -17,7 +17,7 @@ def main():
                         help='The AWS access key id')
     parser.add_argument('--aws-secret-access-key', type=str, default=None,
                         help='The AWS secret access key')
-    
+
     args = parser.parse_args()
     launch_cluster(aws_access_key_id=args.aws_access_key_id,
                    aws_secret_access_key=args.aws_secret_access_key,
@@ -42,3 +42,4 @@ if __name__ == "__main__":
 
 # maybe in the long term
 # TODO: support mutliple regions
+# TODO: create custom VPC and subnet for cassandra

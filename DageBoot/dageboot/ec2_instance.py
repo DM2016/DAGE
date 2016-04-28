@@ -6,7 +6,7 @@ import time
 import sys
 import paramiko
 from scp import SCPClient
-
+from exceptions import *
 
 class SshKey:
     def __init__(self, ec2_key=None, key_file_path=None):
@@ -27,9 +27,6 @@ class Ec2State(Enum):
     terminated = 4
     unavailable = 5
 
-
-class Ec2FailureException(Exception):
-    pass
 
 
 class Ec2Instance:
@@ -136,12 +133,11 @@ class Ec2Instance:
         self.scp_client.close()
         self.ssh_client.close()
 
-    def __init__(self, boto_session=None, instance_id=None,
+    def __init__(self, ec2_client=None, instance_id=None,
                  image_id=None, user_name=None,
                  ssh_key=None, security_group=None,
                  instance_type=None, volume_size=None):
-        self.session = boto_session
-        self.ec2_client = self.session.client('ec2')
+        self.ec2_client = ec2_client
         self.instance_id = instance_id
         self.instance_profile = None
         self.private_ip = None
