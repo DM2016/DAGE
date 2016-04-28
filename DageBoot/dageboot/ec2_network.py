@@ -56,7 +56,7 @@ def delete_security_group(ec2_client=None, name=None):
         )
         return True
     except Exception, e:
-        print e
+        # print e
         # TODO: find the exact exceptions to catch: http://goo.gl/xLG6DO
         return False
 

@@ -51,6 +51,9 @@ def launch_cluster(
         instance.launch_instance()
     for index, instance in enumerate(instances):
         print "Waiting until instance " + str(index) + " is ready"
+        print "Please check your AWS EC2 console, if the instance launching failed" \
+              " (like status check failure), please terminate this process (ctrl+c)" \
+              " and manually terminate all instances launched by it. "
         instance.wait_until_instance_running()
         print "Instance ready, id: %s, private ip: %s, public ip: %s" % (
             instance.get_instance_id(),
@@ -61,8 +64,9 @@ def launch_cluster(
 
     # instances = map(
     #     lambda id: Ec2Instance(
-    #         boto_session=session, instance_id=id, user_name=cluster['user_name'], ssh_key=ssh_key
-    #     ), ['i-9fe06a18', 'i-2ae369ad']
+    #         ec2_client=ec2_client, instance_id=id,
+    #         user_name=cluster['user_name'], ssh_key=ssh_key
+    #     ), ['i-8d73ec10', 'i-8e73ec13']
     # )
 
     print "All instances ready"
@@ -81,4 +85,6 @@ def launch_cluster(
         sys.stdout.write(''.join(stdout_lines))
         sys.stderr.write(''.join(stderr_lines))
         instance.close_ssh()
-        print "All done"
+        print "Instance " + instance.get_instance_id() + "bootstrapping done"
+    print "All done. You may access the cluster by the following endpoints: "
+    print "\n".join(map(lambda inst: inst.get_public_ip(), instances))

@@ -94,6 +94,7 @@ class Ec2Instance:
     def wait_until_instance_running(self):
         while not self.is_running():
             sys.stdout.write('.')
+            sys.stdout.flush()
             time.sleep(5)
         self.update_profile()
         sys.stdout.write('\n')

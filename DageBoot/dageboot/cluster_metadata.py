@@ -160,14 +160,14 @@ security_group_template = {
         {
             "PrefixListIds": [],
             "FromPort": 9160,
-            "IpRanges": [],
+            "IpRanges": [
+                {
+                    "CidrIp": "0.0.0.0/0"
+                }
+            ],
             "ToPort": 9160,
             "IpProtocol": "tcp",
-            "UserIdGroupPairs": [
-                {
-                    "GroupId": ""
-                }
-            ]
+            "UserIdGroupPairs": []
         },
         {
             "PrefixListIds": [],
@@ -184,14 +184,14 @@ security_group_template = {
         {
             "PrefixListIds": [],
             "FromPort": 9042,
-            "IpRanges": [],
+            "IpRanges": [
+                {
+                    "CidrIp": "0.0.0.0/0"
+                }
+            ],
             "ToPort": 9042,
             "IpProtocol": "tcp",
-            "UserIdGroupPairs": [
-                {
-                    "GroupId": ""
-                }
-            ]
+            "UserIdGroupPairs": []
         }
     ]
 }
