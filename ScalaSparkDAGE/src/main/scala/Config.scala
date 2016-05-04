@@ -10,6 +10,7 @@ case class Config (
                     port: String = null, //cassandra port
                     keySpace: String = "vep_1kgp",
                     tableName: String = "vep_annotation",
-                    sort: Boolean = false //if true, keep the original order of VCF file by an expensive sort operation
+                    sort: Boolean = false, //if true, keep the original order of VCF file by an expensive sort operation
+                    missingKeysS3Dir:String = "s3://dage-spark-data/miss/"
                   )
 

@@ -1,7 +1,7 @@
-__author__ = 'dichenli'
-
-from dageboot import *
+import dageboot
 import argparse
+
+__author__ = 'dichenli'
 
 
 def main():
@@ -19,20 +19,17 @@ def main():
                         help='The AWS secret access key')
 
     args = parser.parse_args()
-    launch_cluster(aws_access_key_id=args.aws_access_key_id,
-                   aws_secret_access_key=args.aws_secret_access_key,
-                   aws_profile_name=args.aws_profile_name,
-                   ec2_key=args.key_pair,
-                   key_file_path=args.key_file)
+    dageboot.launch_cluster(aws_access_key_id=args.aws_access_key_id,
+                            aws_secret_access_key=args.aws_secret_access_key,
+                            aws_profile_name=args.aws_profile_name,
+                            ec2_key=args.key_pair,
+                            key_file_path=args.key_file)
 
 
 if __name__ == "__main__":
     main()
 
 
-
-# must done:
-# TODO: setup security group
 
 # very important to have
 # TODO: implement function to restart existing cluster (user need to provide instance ids)

@@ -2,6 +2,8 @@ import Annotation._
 import com.datastax.spark.connector._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
+import java.util.Calendar
+import java.util.Date
 
 /**
   * Created by dichenli on 2/28/16.
@@ -71,6 +73,7 @@ object Main {
 
     val (output, miss) = annotate(dbQueryCassandra(jobConfig))(inputRDD, vepMetaHeader, jobConfig.sort)
     output.saveAsTextFile(jobConfig.output)
+    miss.saveAsTextFile(jobConfig.missingKeysS3Dir + new Date().getTime)
   }
 
   def main(args: Array[String]) {

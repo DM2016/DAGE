@@ -1,12 +1,13 @@
-__author__ = 'dichenli'
-
 import os
-from aenum import Enum
+import aenum
 import time
 import sys
 import paramiko
-from scp import SCPClient
-from exceptions import *
+import scp
+import custom_exceptions
+
+__author__ = 'dichenli'
+
 
 class SshKey:
     def __init__(self, ec2_key=None, key_file_path=None):
@@ -20,13 +21,12 @@ class SshKey:
         return self.file_path
 
 
-class Ec2State(Enum):
+class Ec2State(aenum.Enum):
     pending = 1
     running = 2
     stopped = 3
     terminated = 4
     unavailable = 5
-
 
 
 class Ec2Instance:
@@ -53,7 +53,7 @@ class Ec2Instance:
             self.instance_id = instances[0][u'InstanceId']
             self.state = Ec2State.pending
         else:
-            raise Ec2FailureException('Failed to launch the instance!')
+            raise custom_exceptions.Ec2FailureException('Failed to launch the instance!')
         return self
 
     def is_running(self):
@@ -71,7 +71,7 @@ class Ec2Instance:
         response = self.ec2_client.describe_instances(InstanceIds=[self.instance_id])
         if len(response[u'Reservations']) < 1 or \
                         len(response[u'Reservations'][0][u'Instances']) < 1:
-            raise Ec2FailureException('Failed to get instance profile!')
+            raise custom_exceptions.Ec2FailureException('Failed to get instance profile!')
         self.instance_profile = response[u'Reservations'][0][u'Instances'][0]
         self.private_ip = self.instance_profile[u'PrivateIpAddress']
         if u'PublicIpAddress' in self.instance_profile:
@@ -102,7 +102,8 @@ class Ec2Instance:
 
     def tag_instance(self, key, value):
         if self.state == Ec2State.unavailable:
-            raise Ec2FailureException('Cannot tag a instance not launched yet')
+            raise custom_exceptions.Ec2FailureException(
+                'Cannot tag a instance not launched yet')
         self.ec2_client.create_tags(
             Resources=[self.instance_id],
             Tags=[{
@@ -114,12 +115,13 @@ class Ec2Instance:
 
     def connect_ssh(self):
         if not self.is_running():
-            raise Ec2FailureException('Cannot ssh to a instance not running yet')
+            raise custom_exceptions.Ec2FailureException(
+                'Cannot ssh to a instance not running yet')
         self.ssh_client = paramiko.SSHClient()
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh_client.connect(self.get_public_ip(), username=self.user_name,
-                         key_filename=os.path.expanduser(self.ssh_key.path()))
-        self.scp_client = SCPClient(self.ssh_client.get_transport())
+                                key_filename=os.path.expanduser(self.ssh_key.path()))
+        self.scp_client = scp.SCPClient(self.ssh_client.get_transport())
         return self
 
     def scp(self, files, remote_path):
