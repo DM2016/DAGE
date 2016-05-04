@@ -8,8 +8,8 @@ case class Config (
                     AWSAccessKey: String = null,
                     host: String = null, //cassandra host
                     port: String = null, //cassandra port
-                    keySpace: String = "vep_1kgp",
-                    tableName: String = "vep_annotation",
+                    keySpace: String = "vep_space",
+                    tableName: String = "vep_db",
                     sort: Boolean = false, //if true, keep the original order of VCF file by an expensive sort operation
                     missingKeysS3Dir:String = "s3://dage-spark-data/miss/"
                   )

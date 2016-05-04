@@ -34,6 +34,7 @@ print "Connection established"
 # https://docs.datastax.com/en/cql/3.1/cql/cql_reference/create_keyspace_r.html
 # SimpleStrategy:
 # https://docs.datastax.com/en/cassandra/1.2/cassandra/architecture/architectureDataDistributeReplication_c.html
+# TODO change replication setting
 session.execute(
     "CREATE KEYSPACE IF NOT EXISTS " + KEYSPACE +
     " WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 1}"
@@ -87,8 +88,8 @@ def match_annotation(annotation):
 
 
 def parse_line(raw_line):
-    """Parse a line of raw data, convert to a tuple of 5 strings to present the 5 fields of cassandra DB.
-    The first 4 fields are  chromosome, position, ref, alt. The last field represents
+    """Parse a line of raw data, convert to a tuple of 5 fields to present the 5 fields of cassandra DB.
+    The first 4 fields are  chromosome, position, ref, alt. The last field (a string) represents
     the list of annotations compatible with CQL syntax
 
     For example, an input:
@@ -144,6 +145,7 @@ def insert(raw_line):
 f = gzip.open(sys.argv[1], 'rb')
 count = 0
 bad_count = 0
+# TODO change lines
 lines = 9747  # lines of the file
 start_time = datetime.now()
 for line in f:
@@ -156,6 +158,6 @@ for line in f:
         print str(percent) + "% done, est. time left: " + str(time_left)
 f.close()
 print str(count) + " rows inserted, time spent: " + str(datetime.now() - start_time)
-print "Bad lines: " + bad_count
+print "Bad lines: " + str(bad_count)
 
-# (84801901/9747)*47.2/60/60/3=38.02 hours at best for three nodes
+# (84801901/9747)*47.2/60/60/3=38.02 hours at best for three nodes of Macbook

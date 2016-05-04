@@ -3,6 +3,7 @@
   */
 
 import VCFMetaHeader._
+import com.datastax.spark.connector._
 import org.apache.spark.rdd.RDD
 
 import scala.util.matching.Regex
@@ -16,6 +17,7 @@ object Annotation {
     /**
       * Split one RDD to two by a filter function.
       * [[http://stackoverflow.com/questions/29547185/apache-spark-rdd-filter-into-two-rdds code snippet referenced]]
+      *
       * @param f a filter function
       * @return two RDDs, with data that pass and fail the filter
       */
@@ -38,6 +40,7 @@ object Annotation {
   /**
     * A line of data in VCF file that's not yet annotated, it has 8 fixed columns (chrom, pos, id...)
     * and any number of genotypes data from the study
+    *
     * @param chrom chrom#
     * @param pos position
     * @param id id
@@ -55,6 +58,7 @@ object Annotation {
 
   /**
     * a line of data in VCF file that's already annotated
+    *
     * @param rawVCFLine the original line
     * @param annotation the annotation string to apply to VCF line
     */
@@ -67,6 +71,7 @@ object Annotation {
 
   /**
     * parse VCF line by regex to extract fields from raw string
+    *
     * @param line a VCF data line in original string form
     * @param vcfLineRegex provided, the regex to parse the VCF line
     * @return parsed line of [[RawVCFLine]] class
@@ -80,6 +85,7 @@ object Annotation {
 
   /**
     * deal with cases where annotation is available or not
+    *
     * @param line a raw vcf line
     * @param annotation annotation string, or empty if it doesn't exist in DB
     * @return RDD of the [[VCFLine]] lines annotated or not
@@ -90,17 +96,26 @@ object Annotation {
     case Some(str) => VepVCFLine(line, str)
   }
 
+  case class VepKey(key: String) //necessary for a joinWithCassandraTable call
+  def dbQuery(jobConfig: Config, vcfLines: RDD[RawVCFLine]): RDD[(String, String)] = {
+    //https://github.com/datastax/spark-cassandra-connector/blob/master/doc/2_loading.md#join-with-a-generic-rdd-after-repartitioning
+    //I choose not to repartition before joining because now every node holds 100% of data.
+    //But we may need to change the code if the DB expands.
+    vcfLines.map(vcfLine => VepKey(vcfLine.annotationKey))
+      .joinWithCassandraTable(jobConfig.keySpace, jobConfig.tableName)
+      .map {case (vepKey, cassandraRow) => (vepKey.key, cassandraRow.get[String]("value"))}
+  }
+
   /**
     * Annotate VCF file
-    * @param dbQuery a function to get all annotations data of the vcf lines from a DB
+    *
     * @param vcf RDD of raw VCF file
     * @param vepMetaHeader the metadata lines (## lines) about VEP to be inserted
-    * @param sort if true, keep the original order of VCF file
+    * @param jobConfig the configuration values of job
     * @return (vepVcf, miss). vepVcf: vcf lines with vep annotation. miss: keys not found in DB
     */
-  def annotate(dbQuery: RDD[RawVCFLine] => RDD[(String, String)])
-              (vcf: RDD[String], vepMetaHeader: RDD[String],
-               sort: Boolean): (RDD[String], RDD[String]) = {
+  def annotate(vcf: RDD[String], vepMetaHeader: RDD[String],
+               jobConfig: Config): (RDD[String], RDD[String]) = {
 
     //separate header and body
     val (metaHeader, body) = vcf.splitBy(_.startsWith("#"))
@@ -110,12 +125,12 @@ object Annotation {
 
     //parse body, query annotations
     val vcfLines = body.map(parseVcfLine(_))
-    val vepKV = dbQuery(vcfLines)
+    val vepKV = dbQuery(jobConfig, vcfLines)
 
     //annotate each VCF line by VepDB
     var annotated: RDD[(String, (RawVCFLine, Option[String]))] =
       vcfLines.map(vcfLine => (vcfLine.annotationKey, vcfLine)).leftOuterJoin(vepKV)
-    if (sort) {
+    if (jobConfig.sort) {
       annotated = annotated.sortBy {
         case (key, (rawVCFLine, annotation)) => rawVCFLine.position
       }
