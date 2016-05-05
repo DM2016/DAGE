@@ -46,11 +46,14 @@ object Main {
       c.copy(filterHighConfidence = true) } text "Optional flag to filter data with only " +
       "HC (high confident) loss of function"
 
+    opt[String]("export-missing-keys") optional() action { (x, c) =>
+      c.copy(missingKeysS3Dir = x) } text "Optional flag to export keys missing from VepDB to specified directory "
+
     help("help") text "prints this usage text"
   }
 
 
-
+  //TODO check to make sure all the directories provided exist before proceed
 
   def initSpark(jobConfig: Config): Unit = {
     val sparkConf = new SparkConf(true).setAppName("DAGE VCF VEP annotation")
@@ -60,6 +63,7 @@ object Main {
     }
     val sc = new SparkContext(sparkConf)  //spark context
     if (jobConfig.AWSAccessKeyID != null && jobConfig.AWSAccessKey != null) {
+      sc.hadoopConfiguration.set("fs.s3.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
       sc.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", jobConfig.AWSAccessKeyID)
       sc.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", jobConfig.AWSAccessKey)
     }
@@ -69,7 +73,10 @@ object Main {
 
     val (output, miss) = annotate(inputRDD, vepMetaHeader, jobConfig)
     output.saveAsTextFile(jobConfig.output)
-//    miss.saveAsTextFile(jobConfig.missingKeysS3Dir + new Date().getTime)
+
+    if (jobConfig.missingKeysS3Dir != null) {
+      miss.saveAsTextFile(jobConfig.missingKeysS3Dir + new Date().getTime)
+    }
   }
 
   def main(args: Array[String]) {

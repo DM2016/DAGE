@@ -4,12 +4,15 @@
 
 import VCFMetaHeader._
 import com.datastax.spark.connector._
+import com.datastax.spark.connector.rdd.CassandraJoinRDD
 import org.apache.spark.rdd.RDD
 
 import scala.util.matching.Regex
 
 /**
   * Created by dichenli on 3/28/16.
+  *
+  * Query the Cassandra DB (VepDB) and annotate the VCF file.
   */
 object Annotation {
 
@@ -30,22 +33,20 @@ object Annotation {
   }
 
   /**
-    * a line of data in VCF file, either annotated or not
-    */
-  abstract class VCFLine {
-    val vepKey: VepKey
-
-    def extractKeyString: String = vepKey.toString
-
-    def position: Long = vepKey.pos
-
-    def toVCFString: String
-
-    def isHighConfidence: Boolean
-  }
-
-  /**
-    * necessary for a joinWithCassandraTable call
+    * The key to the VepDB.
+    *
+    * The schema of the VepDB is:
+    * (chrom:int, pos:bigint, ref:text, alt:text, annotations: List<frozen<vep_annotation>>)
+    * where vep_annotation is a user-defined data type in Cassandra with the following fields:
+    * (vep: text, lof: text, lof_filter: text, lof_flags: text, lof_info: text, other_plugins: text)
+    *
+    * The partition key is (chrom, pos, ref, alt). Here it is represented by [[VepKey]]
+    * The List of annotation fields is represented by [[AnnotationFields]]
+    *
+    * @param chrom chrom#
+    * @param pos   position
+    * @param ref   ref field
+    * @param alt   alt field
     */
   case class VepKey(chrom: Int, pos: Long, ref: String, alt: String) {
     override def toString: String = {
@@ -53,6 +54,12 @@ object Annotation {
     }
   }
 
+  /**
+    * To represent the vep_annotation data structure pulled from Cassandra VepDB
+    *
+    * @param cassandraUDTValue [[UDTValue]] defined by SparkCassandraConnector. Here it represents the
+    *                          (vep, lof, lof_filter, lof_flags, lof_info, other_plugins) data structure in Cassandra
+    */
   case class AnnotationFields(cassandraUDTValue: UDTValue) {
     val vep = cassandraUDTValue.get[String]("vep")
     val lof = cassandraUDTValue.get[String]("lof")
@@ -61,12 +68,49 @@ object Annotation {
     val lof_info = cassandraUDTValue.get[String]("lof_info")
     val other_plugins = cassandraUDTValue.get[String]("other_plugins")
 
+    /**
+      * @return the annotation string that will be shown on VEP annotated VCF file
+      */
     override def toString: String = {
       "%s%s|%s|%s|%s%s".format(vep, lof, lof_filter, lof_flags, lof_info, other_plugins)
     }
 
     //TODO it should be lof_filter equals HC, but the sample data has different order
+    /**
+      * @return if this annotation field has high confidence (HC) in the lof_filter field
+      */
     def isHighConfidence: Boolean = lof_info.equals("HC")
+  }
+
+
+  /**
+    * a line of data in VCF file, either annotated or not
+    */
+  abstract class VCFLine {
+    /**
+      * VepDB key, to query from the DB
+      */
+    val vepKey: VepKey
+
+    /**
+      * @return the string representation of the [[vepKey]]
+      */
+    def extractKeyString: String = vepKey.toString
+
+    /**
+      * @return the position field in VCF file
+      */
+    def position: Long = vepKey.pos
+
+    /**
+      * @return The string to represent a valid line in the VCF file
+      */
+    def toVCFString: String
+
+    /**
+      * @return if the line has high confident loss of function, judged by lof_filter field
+      */
+    def isHighConfidence: Boolean
   }
 
   /**
@@ -95,8 +139,11 @@ object Annotation {
   /**
     * a line of data in VCF file that's already annotated
     *
-    * @param rawVCFLine the original line
-    * @param annotationsUDTValue
+    * @param rawVCFLine          the original line
+    * @param annotationsUDTValue the list of annotations directly pulled from VepDB.
+    *                            [[UDTValue]] is defined by SparkCassandraConnector. Here it represents the
+    *                            (vep, lof, lof_filter, lof_flags, lof_info, other_plugins)
+    *                            data structure in Cassandra
     */
   case class VepVCFLine(rawVCFLine: RawVCFLine, annotationsUDTValue: List[UDTValue]) extends VCFLine {
 
@@ -104,6 +151,11 @@ object Annotation {
     override val position = rawVCFLine.pos.toLong
     val annotations: List[AnnotationFields] = annotationsUDTValue.map(AnnotationFields)
 
+    /**
+      * Insert VEP annotations to the original VCF line
+      *
+      * @return The string to represent a valid line in the VCF file
+      */
     override def toVCFString = Array(rawVCFLine.chrom, rawVCFLine.pos, rawVCFLine.id,
       rawVCFLine.ref, rawVCFLine.alt, rawVCFLine.qual_filter,
       rawVCFLine.info + ";" + annotations.mkString(","),
@@ -129,8 +181,12 @@ object Annotation {
   /**
     * deal with cases where annotation is available or not
     *
-    * @param line a raw vcf line
-    * @param annotations
+    * @param line        a raw vcf line
+    * @param annotations the optional list of annotations directly pulled from VepDB.
+    *                    [[UDTValue]] is defined by SparkCassandraConnector. Here it represents the
+    *                    (vep, lof, lof_filter, lof_flags, lof_info, other_plugins)
+    *                    data structure in Cassandra.
+    *                    If it's None, it means the VepDB doesn't contain the record
     * @return RDD of the [[VCFLine]] lines annotated or not
     */
   def matchVepVcfLine(line: RawVCFLine, annotations: Option[List[UDTValue]]): VCFLine = annotations match {
@@ -158,35 +214,37 @@ object Annotation {
 
     //parse body, query annotations
     val vcfLines: RDD[RawVCFLine] = body.map(parseVcfLine(_))
-    val queryKeys: RDD[VepKey] = vcfLines.map(_.vepKey)
 
+    //Extract all keys that we need to use to query VepDB
+    val queryKeys: RDD[VepKey] = vcfLines.map(_.vepKey)
     /*
-     * TODO: explain this line
+     * Query DB
      * About joinWithCassandraTable: see https://goo.gl/CMfmLq
      * I choose not to repartition before joining because now every node holds 100% of data.
      * But we may need to change the code for efficiency if the DB expands.
-     *
-     * some examples of vepDB_v2 data to scala data structure conversion (just for future reference):
-     * val row: CassandraRow = sc.cassandraTable(jobConfig.keySpace, jobConfig.tableName).first
-     * println(row)
-     * println(row.get[String]("ref")) //prints the ref column
-     * val a: List[UDTValue] = row.get[List[UDTValue]]("annotations")
-     * println(a.head) //prints the first UDTValue representing the "vep_annotation" user defined type
-     * println(a.head.get[String]("vep"))
+     * Also we may specify which columns to get (we only need "annotations") to save network traffic
      */
-    val queriedDBRows = queryKeys.joinWithCassandraTable(jobConfig.keySpace, jobConfig.tableName)
+    val queriedDBRows: CassandraJoinRDD[VepKey, CassandraRow] =
+      queryKeys.joinWithCassandraTable(jobConfig.keySpace, jobConfig.tableName)
+    // extract only the annotations column of the DB
     val queriedAnnotations: RDD[(VepKey, List[UDTValue])] = queriedDBRows.map {
       case (vepKey: VepKey, cassandraRow: CassandraRow) =>
         (vepKey, cassandraRow.get[List[UDTValue]]("annotations"))
-    }
+    } //.distinct()
+    //Calling distinct() is necessary if the input VCF file has duplicate lines, otherwise with RDD join operation,
+    //for N identical lines, there will be N^2 identical lines produced in the output file.
+    //However, distinct() is expensive, so I choose to not add it here and assume input VCF never has duplicates
 
-    //annotate each VCF line by VepDB
+
+    //annotate each VCF line by VepDB, convert data to our self-defined data structures
     var annotated: RDD[VCFLine] =
       vcfLines.map(vcfLine => (vcfLine.vepKey, vcfLine)).leftOuterJoin(queriedAnnotations).map {
         case (key: VepKey, (rawVCFLine: RawVCFLine, annotations: Option[List[UDTValue]])) =>
           matchVepVcfLine(rawVCFLine, annotations)
       }
+
     if (jobConfig.sort) {
+      //Sort by position
       annotated = annotated.sortBy {
         case vcfLine => vcfLine.position
       }
@@ -201,14 +259,27 @@ object Annotation {
       case vcfLine: VepVCFLine => false
     }.map(_.extractKeyString)
 
+    //filter lines with high lof confidence
     if (jobConfig.filterHighConfidence) {
       annotated = annotated.filter(_.isHighConfidence)
     }
 
-    val vepVcfBody = annotated.map(_.toVCFString)
+    //Convert to RDD of body lines of VEP VCF file
+    val vepVcfBody: RDD[String] = annotated.map(_.toVCFString)
     //prepend meta and header info to each partition
     val vepVcf = vepVcfBody.mapPartitions(partition => Iterator(processedMetaHeader) ++ partition)
     (vepVcf, miss) //return
   }
 
 }
+
+
+/*
+ * some examples of vepDB_v2 data to scala data structure conversion (just for future reference):
+ *  val row: CassandraRow = sc.cassandraTable(jobConfig.keySpace, jobConfig.tableName).first
+ *  println(row)
+ *  println(row.get[String]("ref")) //prints the ref column
+ *  val a: List[UDTValue] = row.get[List[UDTValue]]("annotations")
+ *  println(a.head) //prints the first UDTValue representing the "vep_annotation" user defined type
+ *  println(a.head.get[String]("vep"))
+ */

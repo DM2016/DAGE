@@ -12,6 +12,6 @@ case class Config (
                     tableName: String = "vep_db",
                     sort: Boolean = false, //if true, keep the original order of VCF file by an expensive sort operation
                     filterHighConfidence: Boolean = false,
-                    missingKeysS3Dir:String = "s3://dage-spark-data/miss/"
+                    missingKeysS3Dir:String = null
                   )
 

@@ -7,10 +7,10 @@ from cassandra.cluster import Cluster
 
 __author__ = 'dichenli'
 
-# This is the second version of VEP_DB populator. The schema of the DB is changed:
-#   chrom:int, pos:bigint, ref:text, alt:text, annotations: List<frozen<
-#       vep text, lof text, lof_filter text, lof_flags text, lof_info text, other_plugins text
-#   >>
+# This is the second version of VEP_DB populator. The schema of the DB is changed to:
+#   (chrom:int, pos:bigint, ref:text, alt:text, annotations: List<frozen<vep_annotation>>)
+#   where vep_annotation is a user-defined data type in Cassandra with the following fields:
+#   (vep: text, lof: text, lof_filter: text, lof_flags: text, lof_info: text, other_plugins: text)
 # vep is the annotation string come default from VEP
 # lof|lof_filter|lof_flags|lof_info are the fields from LoF plugin.
 # other_plugins are other plugins that may be added. It can be empty.
