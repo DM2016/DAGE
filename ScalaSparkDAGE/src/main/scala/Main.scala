@@ -25,11 +25,11 @@ object Main {
     opt[String]('o', "output") required() action { (x, c) =>
       c.copy(output = x) } text "Required, specify the path for output vep annotated files"
 
-    opt[String]("awsKeyId") optional() action { case (x, c) =>
+    opt[String]("aws-access-key-id") optional() action { case (x, c) =>
       c.copy(AWSAccessKeyID = x)} text("Optional, but required for AWS S3 access, " +
         "specify the awsAccessKeyId")
 
-    opt[String]("awsKey") optional() action { case (x, c) =>
+    opt[String]("aws-secret-access-key") optional() action { case (x, c) =>
       c.copy(AWSAccessKey = x)} text("Optional, but required for AWS S3 access, " +
       "specify the awsSecretAccessKey")
 
@@ -39,8 +39,12 @@ object Main {
     opt[String]('p', "port") optional() action { (x, c) =>
       c.copy(port = x) } text "Optional, specify the port number for cassandra DB. Default: 9042"
 
-    opt[Unit]('s', "sort") optional() action { (x, c) =>
+    opt[Unit]('s', "sort") optional() action { (_, c) =>
       c.copy(sort = true) } text "Optional flag to sort vep.vcf file by position number. Default: false"
+
+    opt[Unit]("filter-lof-hc") optional() action { (_, c) =>
+      c.copy(filterHighConfidence = true) } text "Optional flag to filter data with only " +
+      "HC (high confident) loss of function"
 
     help("help") text "prints this usage text"
   }
@@ -65,7 +69,7 @@ object Main {
 
     val (output, miss) = annotate(inputRDD, vepMetaHeader, jobConfig)
     output.saveAsTextFile(jobConfig.output)
-    miss.saveAsTextFile(jobConfig.missingKeysS3Dir + new Date().getTime)
+//    miss.saveAsTextFile(jobConfig.missingKeysS3Dir + new Date().getTime)
   }
 
   def main(args: Array[String]) {

@@ -22,7 +22,7 @@ __author__ = 'dichenli'
 # https://cassandra.apache.org/doc/cql3/CQL-3.0.html
 # https://github.com/datastax/spark-cassandra-connector/tree/master/doc
 
-KEYSPACE = "vep_space"
+KEYSPACE = "dage"
 LINE_TYPE = "vep_annotation"
 TABLE = "vep_db"
 
@@ -53,7 +53,7 @@ session.execute(
 session.execute(
     "CREATE TABLE IF NOT EXISTS " + TABLE +
     "(chrom int, pos bigint, ref text, alt text, annotations list<frozen<" + LINE_TYPE + ">>, " +
-    "PRIMARY KEY  (chrom, pos, ref, alt))"
+    "PRIMARY KEY  ((chrom, pos, ref, alt)))"
 )
 
 

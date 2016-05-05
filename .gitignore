@@ -13,3 +13,4 @@ eggs
 lib
 lib64
 build
+test.sc
