@@ -2,7 +2,8 @@ import gzip
 import re
 import sys
 from datetime import datetime
-
+from threading import Thread
+from cassandra import ConsistencyLevel
 from cassandra.cluster import Cluster
 
 __author__ = 'dichenli'
@@ -26,18 +27,25 @@ KEYSPACE = "dage"
 LINE_TYPE = "vep_annotation"
 TABLE = "vep_db"
 
-cluster = Cluster(contact_points=sys.argv[2:])
+file_name = sys.argv[1]
+contact_points = sys.argv[2:]
+
+print "Counting the number of lines in the file..."
+lines = sum(1 for line in gzip.open(file_name, 'rb'))
+print str(lines) + " lines"
+threads = 4  # tested with different numbers, 4 is the best for the 9747 lines file
+print "Populating the database by " + str(threads) + " threads"
+cluster = Cluster(contact_points=contact_points)
 session = cluster.connect()
-print "Connection established"
+print "Connection to DB established"
 
 # create KEYSPACE:
 # https://docs.datastax.com/en/cql/3.1/cql/cql_reference/create_keyspace_r.html
 # SimpleStrategy:
 # https://docs.datastax.com/en/cassandra/1.2/cassandra/architecture/architectureDataDistributeReplication_c.html
-# TODO change replication setting
 session.execute(
     "CREATE KEYSPACE IF NOT EXISTS " + KEYSPACE +
-    " WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 1}"
+    " WITH replication = {'class': 'NetworkTopologyStrategy', 'us-east-1': 3}"
 )
 session.set_keyspace(KEYSPACE)
 
@@ -123,41 +131,66 @@ def parse_line(raw_line):
     return int(chrom), long(pos), ref, alt, "[" + ", ".join(annotations) + "]"
 
 
-def insert(raw_line):
+def insert(raw_line, db_session):
     """Parse a raw line to compose CQL query and execute it to insert the line"""
     parsed = parse_line(raw_line)
     if parsed is None:
         print "Bad line: %s", raw_line
         return False
-    insert_statement = session.prepare(
+    insert_statement = db_session.prepare(
         "INSERT INTO " + TABLE +
         " (chrom, pos, ref, alt, annotations) VALUES" +
         " (?, ?, ?, ?, " + parsed[4] + ")"
     )
     query = insert_statement.bind(parsed[:4])
+    query.consistency_level = ConsistencyLevel.ALL
     # example query:
     # INSERT INTO vep_db (chrom, pos, ref, alt, annotations) VALUES
     # (1, 901994, 'G', 'A', [{vep: 'foo', lof:'', lof_filter:'', lof_flags: '', lof_info: '', others: ''}])
-    session.execute(query)
+    db_session.execute(query)
     return True
 
 
-f = gzip.open(sys.argv[1], 'rb')
-count = 0
-bad_count = 0
-# TODO change lines
-lines = 9747  # lines of the file
-start_time = datetime.now()
-for line in f:
-    if not insert(line):
-        bad_count += 1
-    count += 1
-    if count % 1000 == 0:
-        percent = float(count) * 100 / lines
-        time_left = (datetime.now() - start_time) * (lines - count) / count
-        print str(percent) + "% done, est. time left: " + str(time_left)
-f.close()
-print str(count) + " rows inserted, time spent: " + str(datetime.now() - start_time)
-print "Bad lines: " + str(bad_count)
+def populate_db(t_idx):
+    """
+    Run by one thread to populate database
+    :param t_idx: the thread index, in range(0, threads)
+    :return: None
+    """
+    f = gzip.open(file_name, 'rb')  # read only access, so thread safe
+    count = 0  # line number in the file
+    inserted = 0  # number of lines inserted by this thread
+    bad_count = 0  # number of lines not inserted because of bad format
 
-# (84801901/9747)*47.2/60/60/3=38.02 hours at best for three nodes of Macbook
+    start_time = datetime.now()
+    for line in f:
+        count += 1
+        if count % threads != t_idx:
+            continue
+        # Multiple threads are sharing the same session.
+        # using more than one session for one key space is not good: http://goo.gl/lkH0rR
+        # also session object is thread safe: http://goo.gl/rb9QTp
+        if not insert(line, session):
+            bad_count += 1
+        else:
+            inserted += 1
+        if inserted % 1000 == 0 and inserted > 0: # prints after each 1000 lines of inserts
+            percent = float(count) * 100 / lines
+            time_left = (datetime.now() - start_time) * (lines - count) / count
+            print "Thread #" + str(t_idx) + ": " + str(percent) + "% done, est. time left: " + str(time_left)
+    f.close()
+    print "Thread #" + str(t_idx) + ": " + str(inserted) + \
+          " rows inserted, time spent: " + str(datetime.now() - start_time)
+    print "Thread #" + str(t_idx) + ": " + "Bad lines: " + str(bad_count)
+
+
+pool = []
+for i in range(0, threads):
+    t = Thread(target=populate_db, args=(i,))
+    t.start()
+    pool.append(t)
+
+for t in pool:
+    t.join()
+
+session.shutdown()
