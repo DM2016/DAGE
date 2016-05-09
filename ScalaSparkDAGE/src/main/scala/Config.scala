@@ -12,6 +12,8 @@ case class Config (
                     tableName: String = "vep_db",
                     sort: Boolean = false, //if true, keep the original order of VCF file by an expensive sort operation
                     filterHighConfidence: Boolean = false,
-                    missingKeysS3Dir:String = null
+                    missingKeysS3Dir:String = null,
+                    flipStrand:Boolean = true,
+                    flipAllele:Boolean = true
                   )
 

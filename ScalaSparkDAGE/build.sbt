@@ -28,6 +28,7 @@ assemblyMergeStrategy in assembly := {
 }
 
 //Required to resolve guava version conflict between spark and spark-cassandra-connector
+//see https://goo.gl/7ykqXF
 assemblyShadeRules in assembly := Seq(
   ShadeRule.rename("com.google.**" -> "shadeio.@1").inAll
 )
