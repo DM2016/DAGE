@@ -82,8 +82,9 @@ object VCFLineTypes {
       val genotypePattern = """(.*)\|(.*)""".r
       def flipGenotype(genotype: String): String = genotype match {
         case genotypePattern(left, right) => right + "|" + left
+        case _ => genotype
       }
-      genotypes.split("\t").map(pair => flipGenotype(pair)).mkString("\t")
+      genotypes.split("""\s+""").map(pair => flipGenotype(pair)).mkString("\t")
     }
 
     lazy val strandFlippedVCFLine = this.copy(ref = this.flippedRef, alt = this.flippedAlt, reference = Option(this))
@@ -136,11 +137,11 @@ object VCFLineTypes {
     * @return parsed line of [[RawVCFLine]] class
     */
   def parseVcfLine(line: String, vcfLineRegex: Regex =
-  """^([^\t]+)\t(\d+)\t([^\t]+)\t([AGCT]+)\t([AGCT]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t(.+)$""".r
+  """^(chr)?([^\t]+)\t(\d+)\t([^\t]+)\t([AGCT]+)\t([AGCT]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t(.+)$""".r
                   ): Option[RawVCFLine] =
 
     line match {
-      case vcfLineRegex(chrom, pos, id, ref, alt, qual, filter, info, format, genotypes) =>
+      case vcfLineRegex(chrPrefix, chrom, pos, id, ref, alt, qual, filter, info, format, genotypes) =>
         Option(RawVCFLine(chrom, pos.toLong, id, ref, alt, qual, filter, info, format, genotypes, Option.empty))
       case _ => None
     }

@@ -28,9 +28,8 @@ case class AnnotationFields(cassandraUDTValue: UDTValue) {
     "%s%s|%s|%s|%s%s".format(vep, lof, lof_filter, lof_flags, lof_info, other_plugins)
   }
 
-  //TODO it should be lof_filter equals HC, but the sample data has different order
   /**
     * @return if this annotation field has high confidence (HC) in the lof_filter field
     */
-  def isHighConfidence: Boolean = lof_info.equals("HC")
+  def isHighConfidence: Boolean = lof_filter.equals("HC")
 }

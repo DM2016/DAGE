@@ -23,7 +23,7 @@ object VEPMetaData {
       "from Ensembl VEP. Format: Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type" +
       "|Feature|BIOTYPE|EXON|INTRON|HGVSc|HGVSp|cDNA_position|CDS_position|" +
       "Protein_position|Amino_acids|Codons|Existing_variation|DISTANCE|STRAND|" +
-      "SYMBOL_SOURCE|HGNC_ID|LoF_flags|LoF_filter|LoF_info|LoF\">"
+      "SYMBOL_SOURCE|HGNC_ID|LoF|LoF_filter|LoF_flags|LoF_info\">"
   )
 }
 

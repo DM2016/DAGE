@@ -1,10 +1,6 @@
 import Annotation._
 import com.datastax.driver.core.ConsistencyLevel
-import com.datastax.spark.connector._
-import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
-import java.util.Calendar
-import java.util.Date
 
 /**
   * Created by dichenli on 2/28/16.
@@ -50,21 +46,34 @@ object Main {
     opt[String]("export-missing-keys") optional() action { (x, c) =>
       c.copy(missingKeysS3Dir = x) } text "Optional flag to export keys missing from VepDB to specified directory "
 
+    opt[Int]("partitions") optional() action { (x, c) =>
+      c.copy(partitions = Some(x)) } text "Optional flag to specify the number of partitions" +
+      " in the final output of a job. The repartition step may be slow, especially if the number of partitions " +
+      "is too small. Also, if a partition is too large for an worker, the job will fail by OutOfMemoryException."
+
+    opt[String]("name") optional() action { (x, c) =>
+      c.copy(jobName = x + c.jobName) } text "Specify a name for the job"
+
+    opt[Unit]("flip-strand") optional() action { (_, c) =>
+      c.copy(flipStrand = true) } text "Try to match DB by flipping strand"
+
+    opt[Unit]("flip-allele") optional() action { (_, c) =>
+      c.copy(flipAllele = true) } text "Try to match DB by flipping allele (ref and alt columns)"
+
     help("help") text "prints this usage text"
   }
 
   def initSpark(jobConfig: Config): Unit = {
     val sparkConf = new SparkConf(true).setAppName("DAGE VCF VEP annotation")
       .set("spark.cassandra.connection.host", jobConfig.host)
-    if (jobConfig.port != null) {
       //about consistency levels: https://goo.gl/gn16lK
       //our DB has write consistency of ALL
+      .set("spark.cassandra.output.consistency.level", ConsistencyLevel.LOCAL_ONE.toString)
+    if (jobConfig.port != null) {
       sparkConf.set("spark.cassandra.connection.port", jobConfig.port)
-        .set("spark.cassandra.output.consistency.level", ConsistencyLevel.LOCAL_ONE.toString)
     }
     val sc: SparkContext = new SparkContext(sparkConf)  //spark context
     if (jobConfig.AWSAccessKeyID != null && jobConfig.AWSAccessKey != null) {
-      sc.hadoopConfiguration.set("fs.s3.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
       sc.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", jobConfig.AWSAccessKeyID)
       sc.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", jobConfig.AWSAccessKey)
     }
@@ -73,12 +82,12 @@ object Main {
     val vepMetaHeader = sc.parallelize(VEPMetaData.metadata)
 
     val (output, miss) = annotate(inputRDD, vepMetaHeader, jobConfig, sc)
-    output.saveAsTextFile(jobConfig.output)
+    output.saveAsTextFile(jobConfig.output + jobConfig.jobName)
 
-    println("Missing keys count: " + miss.count())
-    println(miss.collect().mkString("\n"))
+//    println("Missing keys count: " + miss.count())
+//    println(miss.collect().mkString("\n"))
     if (jobConfig.missingKeysS3Dir != null) {
-      miss.saveAsTextFile(jobConfig.missingKeysS3Dir + new Date().getTime)
+      miss.saveAsTextFile(jobConfig.missingKeysS3Dir + jobConfig.jobName)
     }
   }
 
@@ -107,3 +116,4 @@ object Main {
 //TODO allow user to decide if they want to output all missed keys (it defaults to yes now)
 //TODO allow user to access S3 by an AWS profile rather than key pair (is it even possible?)
 //TODO write unit test and/or integration test
+//TODO in class Config, change all fields that could be null to Option[Type]

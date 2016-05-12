@@ -145,7 +145,7 @@ def insert(raw_line, db_session):
     query.consistency_level = ConsistencyLevel.LOCAL_ONE
     # example query:
     # INSERT INTO vep_db (chrom, pos, ref, alt, annotations) VALUES
-    # (1, 901994, 'G', 'A', [{vep: 'foo', lof:'', lof_filter:'', lof_flags: '', lof_info: '', others: ''}])
+    # ('1', 901994, 'G', 'A', [{vep: 'foo', lof:'', lof_filter:'', lof_flags: '', lof_info: '', other_plugins: ''}])
     db_session.execute(query)
     return True
 

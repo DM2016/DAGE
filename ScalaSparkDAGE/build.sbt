@@ -15,7 +15,6 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "1.6.0" % "provided",
   "com.datastax.spark" %% "spark-cassandra-connector" % "1.5.0",
   "com.github.scopt" %% "scopt" % "3.4.0"
-//  "com.github.seratch" %% "awscala" % "0.5.+"
 )
 
 //required in: https://github.com/scopt/scopt

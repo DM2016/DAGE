@@ -4,7 +4,7 @@ __author__ = 'dichenli'
 from setuptools import setup
 
 setup(name='dageboot',
-      version='0.1.4',
+      version='0.1.5',
       description='DAGE cassandra bootstrap tool',
       long_description='DAGE cassandra bootstrap tool...',
       url='https://github.com/dichenli/DAGE',

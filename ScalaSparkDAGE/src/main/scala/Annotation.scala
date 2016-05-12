@@ -120,7 +120,14 @@ object Annotation {
     }
 
     //Convert to RDD of body lines of VEP VCF file
-    val vepVcfBody: RDD[String] = vcfLinesAfterAnnotation.map(_.toVCFString)
+    var vepVcfBody: RDD[String] = vcfLinesAfterAnnotation.map(_.toVCFString)
+    var missedKeys = unannotated.map(_.extractKeyString)
+
+    if (jobConfig.partitions.isDefined) {
+      val partitions = jobConfig.partitions.get
+      vepVcfBody = vepVcfBody.coalesce(numPartitions = partitions, shuffle = false)
+      missedKeys = missedKeys.coalesce(numPartitions = partitions, shuffle = false)
+    }
 
     //prepend meta and header info to each partition
     //avoid adding header to empty partition
@@ -137,7 +144,7 @@ object Annotation {
      * extract all lines that are not being annotated because of DB query miss, return a string
      * with format: "chromosome    position    ref    alt" (separated by '\t')
      */
-    (vepVcf, unannotated.map(_.extractKeyString)) //return
+    (vepVcf, missedKeys) //return
   }
 
 }

@@ -1,3 +1,3 @@
-import cassandra_cluster
+from cassandra_cluster import *
 
 __author__ = 'dichenli'

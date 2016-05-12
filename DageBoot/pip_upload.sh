@@ -8,4 +8,4 @@ subl ~/.aws/credentials
 #ssh -i ~/.ec2/dage.pem ec2-user@
 #sudo pip install dageboot
 #aws configure
-#dageboot --key-pair dage --key-file ~/dage.pem --aws-profile-name default
+#dageboot --key-pair dage --key-file ~/.ec2/dage.pem --aws-profile-name default

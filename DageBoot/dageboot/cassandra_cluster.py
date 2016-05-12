@@ -3,10 +3,11 @@ import pkg_resources
 import cluster_metadata
 from cluster_metadata import cluster
 import custom_exceptions
-from dageboot.ec2_network import generate_cassandra_security_group
+from ec2_network import generate_cassandra_security_group
 import ec2_instance
 import sys
 import os
+import time
 
 __author__ = 'dichenli'
 
@@ -33,7 +34,7 @@ def launch_cluster(
             'aws-access-key-id and aws-secret-access-key must be provided simultaneously.')
     ec2_client = session.client('ec2')
 
-    print "Bootstrapping DAGE cassandra cluster"
+    print "Bootstrapping DAGE VepDB cassandra cluster. This takes about 10 minutes."
     ssh_key = ec2_instance.SshKey(ec2_key=ec2_key, key_file_path=key_file_path)
     cassandra_setup = get_resource('resources', 'cassandra_setup.py')
     cassandra_boot = get_resource('resources', 'cassandra_boot.sh')
@@ -56,7 +57,8 @@ def launch_cluster(
     for index, instance in enumerate(instances):
         print "Launching instance " + str(index)
         instance.launch_instance()
-        instance.tag_instance(key='Name', value='Cassandra_' + str(index))
+        time.sleep(3)
+        instance.tag_instance(key='Name', value='DageVepDB_' + str(index))
     for index, instance in enumerate(instances):
         print "Waiting until instance " + str(index) + " is ready"
         instance.wait_until_instance_running()
@@ -88,7 +90,15 @@ def launch_cluster(
         stdout_lines, stderr_lines = instance.ssh_command(boot_cmd)
         sys.stdout.write(''.join(stdout_lines))
         sys.stderr.write(''.join(stderr_lines))
-        instance.close_ssh()
         print "Bootstrapping " + instance.get_instance_id() + " done"
+        time.sleep(3) # do it gently, don't start all nodes at once
+
+    time.sleep(60) # wait for cassandra bootstrap
+    print "nodetool status report for the cluster:"
+    for index, instance in enumerate(instances):
+        stdout_lines, stderr_lines = instance.ssh_command("sudo nodetool status")
+        sys.stdout.write(''.join(stdout_lines))
+        sys.stderr.write(''.join(stderr_lines))
+        instance.close_ssh()
     print "All done. You may access the cluster by the following endpoints: "
     print "\n".join(map(lambda inst: inst.get_public_ip(), instances))
