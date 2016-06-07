@@ -47,9 +47,12 @@ object Main {
       c.copy(missingKeysS3Dir = x) } text "Optional flag to export keys missing from VepDB to specified directory "
 
     opt[Int]("partitions") optional() action { (x, c) =>
-      c.copy(partitions = Some(x)) } text "Optional flag to specify the number of partitions" +
+      c.copy(partitions = Some(x)) } text "Optional parameter to specify the number of partitions" +
       " in the final output of a job. The repartition step may be slow, especially if the number of partitions " +
       "is too small. Also, if a partition is too large for an worker, the job will fail by OutOfMemoryException."
+
+    opt[Int]("parallelism") optional() action { (x, c) =>
+      c.copy(parallelism = Some(x)) } text "Optional parameter to specify the spark.default.parallelism value"
 
     opt[String]("name") optional() action { (x, c) =>
       c.copy(jobName = x + c.jobName) } text "Specify a name for the job"
@@ -63,16 +66,23 @@ object Main {
     help("help") text "prints this usage text"
   }
 
-  def initSpark(jobConfig: Config): Unit = {
+  def runSpark(jobConfig: Config): Unit = {
     val sparkConf = new SparkConf(true).setAppName("DAGE VCF VEP annotation")
       .set("spark.cassandra.connection.host", jobConfig.host)
       //about consistency levels: https://goo.gl/gn16lK
       //our DB has write consistency of ALL
       .set("spark.cassandra.output.consistency.level", ConsistencyLevel.LOCAL_ONE.toString)
+
     if (jobConfig.port != null) {
       sparkConf.set("spark.cassandra.connection.port", jobConfig.port)
     }
+
+    if (jobConfig.parallelism.isDefined) {
+      sparkConf.set("spark.default.parallelism", jobConfig.parallelism.get.toString)
+    }
+
     val sc: SparkContext = new SparkContext(sparkConf)  //spark context
+
     if (jobConfig.AWSAccessKeyID != null && jobConfig.AWSAccessKey != null) {
       sc.hadoopConfiguration.set("fs.s3n.awsAccessKeyId", jobConfig.AWSAccessKeyID)
       sc.hadoopConfiguration.set("fs.s3n.awsSecretAccessKey", jobConfig.AWSAccessKey)
@@ -93,7 +103,7 @@ object Main {
 
   def main(args: Array[String]) {
     parser.parse(args, Config()) map { config =>
-      initSpark(config)
+      runSpark(config)
     } getOrElse {
       // arguments are bad, usage message will be displayed
       print("Invalid configuration")

@@ -12,12 +12,14 @@ __author__ = 'dichenli'
 #   (chrom:text, pos:bigint, ref:text, alt:text, annotations: List<frozen<vep_annotation>>)
 #   where vep_annotation is a user-defined data type in Cassandra with the following fields:
 #   (vep: text, lof: text, lof_filter: text, lof_flags: text, lof_info: text, other_plugins: text)
-# vep is the annotation string come default from VEP
+# vep is the basic annotation string
 # lof|lof_filter|lof_flags|lof_info are the fields from LoF plugin.
 # other_plugins are other plugins that may be added. It can be empty.
 # This script assumes LoF is the first plugin, all other plugins come after LoF in the input string
 # A frozen list is like a tuple, it has fixed number of elements:
 # https://docs.datastax.com/en/cql/3.3/cql/cql_reference/collection_type_r.html
+# 
+# Currently this python script only supports gzipped file, and a single input file
 #
 # Useful documentations:
 # https://cassandra.apache.org/doc/cql3/CQL-3.0.html

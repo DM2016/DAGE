@@ -16,8 +16,9 @@ case class Config(
                    sort: Boolean = false, //if true, keep the original order of VCF file by an expensive sort operation
                    filterHighConfidence: Boolean = false,
                    missingKeysS3Dir: String = null,
-                   flipStrand: Boolean = true,
-                   flipAllele: Boolean = true,
-                   partitions: Option[Int] = Option.empty
+                   flipStrand: Boolean = false,
+                   flipAllele: Boolean = false,
+                   partitions: Option[Int] = Option.empty,
+                   parallelism: Option[Int] = Option.empty
                  )
 
