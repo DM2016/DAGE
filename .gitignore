@@ -6,6 +6,7 @@ foxyproxy-settings.xml
 *.yaml*
 *.pyc
 .installed.cfg
+*.iml
 bin
 develop-eggs
 dist
