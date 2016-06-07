@@ -1,6 +1,6 @@
 dageboot: Distributed Annotation of Genetic Effects Bootstrap
 
-It is a tool to automate the launching of DAGE Cassandra database cluster.
+dageboot is a tool to automate the launching of DAGE Cassandra database cluster.
 The database is under development, and is not yet available to the public.
 
 Requirements:
@@ -24,3 +24,4 @@ Running:
     To see more options for running, run:
         dageboot --help
 
+NOTE: if you run dageboot you will be billed for the resources instantiated. This utility automates the launching of AWS resources which are billed to your account.

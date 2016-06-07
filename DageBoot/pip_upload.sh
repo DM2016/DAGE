@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 python setup.py install
 python setup.py develop
-python setup.py sdist upload
+#Probably only one of the two commands above is necessary,
+#but I'm too lazy to figure out which....
+python setup.py sdist upload # to upload to pypi
 subl ~/.aws/credentials
 
 #scp -i ~/.ec2/dage.pem ~/.ec2/dage.pem ec2-user@:~/

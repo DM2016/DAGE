@@ -2,10 +2,10 @@ __author__ = 'dichenli'
 
 cluster = {
     'region_name': 'us-east-1',
-    'ami_ids': ['ami-c2c925af', 'ami-91ce22fc', 'ami-e5cf2388'],
+    'ami_ids': ['ami-c2c925af', 'ami-91ce22fc', 'ami-e5cf2388'], # These are the AMI images for the cassandra cluster
     'user_name': 'ec2-user',
     'instance_type': 'r3.xlarge',
-    'volume_size': 100
+    'volume_size': 100 # in GB, size of EBS volume
 }
 
 # a template for proper security group for cassandra, need to fill in user id and 
