@@ -8,7 +8,7 @@ aws emr create-cluster --applications Name=Hadoop Name=Hive Name=Pig Name=Hue Na
 --profile aws150415 --region us-east-1
 
 #10K lines
-#aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' --steps '[{"Args":["spark-submit","--deploy-mode","cluster","--class","Main","s3://dage-spark-data/jars/Simple_Project-assembly-0.0.1.jar","-i","s3://dage-spark-data/input/first_ten_thousand_lines_of_1kGP_chr1.vcf","-o","s3://dage-spark-data/output/10000lines/","-h","54.197.194.162","--export-missing-keys","s3://dage-spark-data/miss/10000lines/","--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA","--aws-secret-access-key","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"],"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar","Properties":"","Name":"Lines10000"}]' --profile aws150415 --region us-east-1
+#aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' --steps '[{"Args":["spark-submit","--deploy-mode","cluster","--class","Main","s3://dage-spark-data/jars/Simple_Project-assembly-0.0.1.jar","-i","s3://dage-spark-data/input/first_ten_thousand_lines_of_1kGP_chr1.vcf","-o","s3://dage-spark-data/output/10000lines/","-h","54.197.194.162","--export-missing-keys","s3://dage-spark-data/miss/10000lines/","--aws-access-key-id","myKey","--aws-secret-access-key","myValue"],"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar","Properties":"","Name":"Lines10000"}]' --profile aws150415 --region us-east-1
 
 #
 aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' \
@@ -18,8 +18,8 @@ aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' \
 '"-o","s3://dage-spark-data/output/neighbor_1/",'\
 '"-h","54.197.194.162",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"Basic"}]' \
 --profile aws150415 --region us-east-1
@@ -33,8 +33,8 @@ aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' \
 '"-s",'\
 '"--name","SortResult",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"SortResult"}]' \
 --profile aws150415 --region us-east-1
@@ -47,8 +47,8 @@ aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' \
 '"-h","54.165.231.90",'\
 '"--name","r3.2xlarge2",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"BasicWith r3.2xlarge2"}]' \
 --profile aws150415 --region us-east-1
@@ -61,8 +61,8 @@ aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' \
 '"-h","54.197.194.162",'\
 '"--partitions","1",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"Partition1"}]' \
 --profile aws150415 --region us-east-1
@@ -75,8 +75,8 @@ aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' \
 '"-h","54.152.83.70",'\
 '"--name","r3large",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"BasicWith r3.large"}]' \
 --profile aws150415 --region us-east-1
@@ -89,8 +89,8 @@ aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' \
 '"-h","54.152.83.70",'\
 '"--name","r3large2",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"BasicWith r3.large2"}]' \
 --profile aws150415 --region us-east-1
@@ -103,8 +103,8 @@ aws emr add-steps --cluster-id 'j-38GLUO3PMCRM1' \
 '"-h","54.152.83.70",'\
 '"--name","r3large3",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"BasicWith r3.large3"}]' \
 --profile aws150415 --region us-east-1
@@ -117,8 +117,8 @@ aws emr add-steps --cluster-id 'j-1GJP3MUQQ5NLY' \
 '"-h","54.175.249.244",'\
 '"--name","r3xlarge",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"BasicWith r3.xlarge"}]' \
 --profile aws150415 --region us-east-1
@@ -131,8 +131,8 @@ aws emr add-steps --cluster-id 'j-1GJP3MUQQ5NLY' \
 '"-h","54.175.249.244",'\
 '"--name","r3xlarge",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"BasicWith r3.xlarge"}]' \
 --profile aws150415 --region us-east-1
@@ -145,8 +145,8 @@ aws emr add-steps --cluster-id 'j-1GJP3MUQQ5NLY' \
 '"-h","54.85.210.74",'\
 '"--name","r3xlarge_reboot",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"BasicWith r3.xlarge_reboot"}]' \
 --profile aws150415 --region us-east-1
@@ -159,8 +159,8 @@ aws emr add-steps --cluster-id 'j-60S5A53LGNCZ' \
 '"-h","54.85.210.74",'\
 '"--name","oldDB_newEMR",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"oldDB_newEMR"}]' \
 --profile aws150415 --region us-east-1
@@ -173,8 +173,8 @@ aws emr add-steps --cluster-id 'j-60S5A53LGNCZ' \
 '"-h","54.173.2.84",'\
 '"--name","newDB_oldEMR",'\
 '"--export-missing-keys","s3://dage-spark-data/miss/neighbor_1/",'\
-'"--aws-access-key-id","AKIAJAV75BJ5HBA4MLUA",'\
-'"--aws-secret-access-key","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"],'\
+'"--aws-access-key-id","myKey",'\
+'"--aws-secret-access-key","myValue"],'\
 '"Type":"CUSTOM_JAR","ActionOnFailure":"CONTINUE","Jar":"command-runner.jar",'\
 '"Properties":"","Name":"newDB_oldEMR"}]' \
 --profile aws150415 --region us-east-1

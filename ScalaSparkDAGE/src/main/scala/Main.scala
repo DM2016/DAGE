@@ -69,8 +69,9 @@ object Main {
   def runSpark(jobConfig: Config): Unit = {
     val sparkConf = new SparkConf(true).setAppName("DAGE VCF VEP annotation")
       .set("spark.cassandra.connection.host", jobConfig.host)
-      //about consistency levels: https://goo.gl/gn16lK
-      //our DB has write consistency of ALL
+      // about consistency levels: https://goo.gl/nzu9JW, https://goo.gl/gn16lK
+      // With LOCAL_ONE, Cassandra client will contact only one node responsible for the data in current data center,
+      // Because the DB is never updated, there won't be any inconsistency issue
       .set("spark.cassandra.output.consistency.level", ConsistencyLevel.LOCAL_ONE.toString)
 
     if (jobConfig.port != null) {
