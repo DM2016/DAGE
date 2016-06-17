@@ -95,7 +95,8 @@ object Main {
     val (output, miss) = annotate(inputRDD, vepMetaHeader, jobConfig, sc)
     output.saveAsTextFile(jobConfig.output + jobConfig.jobName)
 
-//    println("Missing keys count: " + miss.count())
+    println("Missing keys count: " + miss.count())
+    println("Output lines count: " + output.count())
 //    println(miss.collect().mkString("\n"))
     if (jobConfig.missingKeysS3Dir != null) {
       miss.saveAsTextFile(jobConfig.missingKeysS3Dir + jobConfig.jobName)

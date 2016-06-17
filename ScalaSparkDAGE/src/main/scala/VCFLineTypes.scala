@@ -99,16 +99,16 @@ object VCFLineTypes {
     * a line of data in VCF file that's already annotated
     *
     * @param rawVCFLine          the original line
-    * @param annotationsUDTValue the list of annotations directly pulled from VepDB.
+    * @param annotationsUDTValues the list of annotations directly pulled from VepDB.
     *                            [[UDTValue]] is defined by SparkCassandraConnector. Here it represents the
     *                            (vep, lof, lof_filter, lof_flags, lof_info, other_plugins)
     *                            data structure in Cassandra
     */
-  case class VepVCFLine(rawVCFLine: RawVCFLine, annotationsUDTValue: List[UDTValue])
+  case class VepVCFLine(rawVCFLine: RawVCFLine, annotationsUDTValues: List[UDTValue])
     extends VCFLine {
 
     override val position = rawVCFLine.pos
-    val annotations: List[AnnotationFields] = annotationsUDTValue.map(AnnotationFields)
+    val annotations: List[AnnotationFields] = annotationsUDTValues.map(AnnotationFields)
 
     /**
       * Insert VEP annotations to the original VCF line

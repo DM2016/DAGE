@@ -1255,7 +1255,7 @@ aws emr add-steps --cluster-id 'j-3896YAVSMIURX' \
 --profile brian --region us-east-1
 
 
-#won't work
+#won't work: only 50% of CPU is in usage
 aws emr create-cluster --applications Name=Ganglia Name=Spark \
 --ec2-attributes '{"KeyName":"dage_brian","InstanceProfile":"EMR_EC2_DefaultRole","SubnetId":"subnet-e6481790"}' \
 --service-role EMR_DefaultRole --enable-debugging --release-label emr-4.6.0 \

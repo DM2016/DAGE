@@ -63,7 +63,11 @@ session.execute(
 session.execute(
     "CREATE TABLE IF NOT EXISTS " + TABLE +
     "(chrom text, pos bigint, ref text, alt text, annotations list<frozen<" + LINE_TYPE + ">>, " +
-    "PRIMARY KEY  ((chrom, pos, ref, alt)))"
+    "PRIMARY KEY  ((chrom, pos, ref, alt)))" 
+    #TODO: In the next version, we should use "PRIMARY KEY ((chrom), pos, ref, alt)"
+    #so that we have both partition key and clustering keys inside primary key.
+    #In this way, query speed could be improved (no promise!)
+    #See https://jagadeeshs.wordpress.com/2015/07/15/cassandra/
 )
 
 
@@ -145,7 +149,7 @@ def insert(raw_line, db_session):
         " (?, ?, ?, ?, " + parsed[4] + ")"
     )
     query = insert_statement.bind(parsed[:4])
-    query.consistency_level = ConsistencyLevel.LOCAL_ONE #Guarantee write on one node
+    query.consistency_level = ConsistencyLevel.ALL
     # example query:
     # INSERT INTO vep_db (chrom, pos, ref, alt, annotations) VALUES
     # ('1', 901994, 'G', 'A', [{vep: 'foo', lof:'', lof_filter:'', lof_flags: '', lof_info: '', other_plugins: ''}])
