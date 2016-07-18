@@ -1,10 +1,9 @@
 dageboot: Distributed Annotation of Genetic Effects Bootstrap
 
-dageboot is a tool to automate the launching of DAGE Cassandra database cluster.
-The database is under development, and is not yet available to the public.
+dageboot is a tool to automate the launching of the VEPDB Cassandra database cluster.
 
 Requirements:
-    1. Linux or Mac OS
+    1. Linux or Mac OS X
     2. python 2.7 (other versions may work but not tested yet)
     3. pip installed, see https://pip.pypa.io/en/stable/installing/
     4. An AWS account accessible to us-east-1 (North Virginia) region
