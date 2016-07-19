@@ -8,7 +8,7 @@ from cassandra.cluster import Cluster
 
 __author__ = 'dichenli'
 
-# This is the second version of VEP_DB populator. The schema of the DB is changed to:
+# This is the VEP_DB populator. The schema of the DB is:
 #   (chrom:text, pos:bigint, ref:text, alt:text, annotations: List<frozen<vep_annotation>>)
 #   where vep_annotation is a user-defined data type in Cassandra with the following fields:
 #   (vep: text, lof: text, lof_filter: text, lof_flags: text, lof_info: text, other_plugins: text)
@@ -19,9 +19,9 @@ __author__ = 'dichenli'
 # A frozen list is like a tuple, it has fixed number of elements:
 # https://docs.datastax.com/en/cql/3.3/cql/cql_reference/collection_type_r.html
 #
-# Currently this python script only supports gzipped file, and a single input file
+# Currently this Python script only supports a single gzipped input file...
 #
-# Useful documentations:
+# Useful external documentation:
 # https://cassandra.apache.org/doc/cql3/CQL-3.0.html
 # https://github.com/datastax/spark-cassandra-connector/tree/master/doc
 
@@ -33,10 +33,10 @@ file_name = sys.argv[1]
 contact_points = sys.argv[2:]
 
 print "Counting the number of lines in the file..."
-lines = sum(1 for line in gzip.open(file_name, 'rb')) #84801901
+lines = sum(1 for line in gzip.open(file_name, 'rb')) #84801901 from 1kGP, e.g.
 print str(lines) + " lines"
 threads = 4  # tested with different numbers, 4 is the best for the 9747 lines file
-print "Populating the database by " + str(threads) + " threads"
+print "Populating the database with " + str(threads) + " threads"
 cluster = Cluster(contact_points=contact_points)
 session = cluster.connect()
 print "Connection to DB established"
@@ -45,28 +45,26 @@ print "Connection to DB established"
 # https://docs.datastax.com/en/cql/3.1/cql/cql_reference/create_keyspace_r.html
 session.execute(
     "CREATE KEYSPACE IF NOT EXISTS " + KEYSPACE +
-    # " WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 1}"
     " WITH replication = {'class': 'NetworkTopologyStrategy', 'us-east': 3}"
-    #for multiple data centers, specify the replication factor of every one
+    #For multiple data centers, specify the replication factor of each one here.
 )
 session.set_keyspace(KEYSPACE)
 
 # Each key (chromosome, position, ref, alt) maps to a list of annotations, each one
-# has the basic VEP fields, LoF plugin fields, and other plugin fields. This structure
+# has the basic VEP fields, and then any other plugin fields. This structure
 # is represented by the type below:
 session.execute(
-    "CREATE TYPE IF NOT EXISTS " + L INE_TYPE+
+    "CREATE TYPE IF NOT EXISTS " + LINE_TYPE+
     " (vep text, lof text, lof_filter text, lof_flags text, lof_info text, other_plugins text)"
 )
 
-# Compound key of (chromosome, position, ref, alt), the value is a list of the annotations
+# Compound key of (chromosome, position, ref, alt), the value is a list of the annotations.
 session.execute(
     "CREATE TABLE IF NOT EXISTS " + TABLE +
     "(chrom text, pos bigint, ref text, alt text, annotations list<frozen<" + LINE_TYPE + ">>, " +
     "PRIMARY KEY  ((chrom, pos, ref, alt)))" 
     #TODO: In the next version, we should use "PRIMARY KEY ((chrom), pos, ref, alt)"
     #so that we have both partition key and clustering keys inside primary key.
-    #In this way, query speed could be improved (no promise!)
     #See https://jagadeeshs.wordpress.com/2015/07/15/cassandra/
 )
 
@@ -104,7 +102,7 @@ def match_annotation(annotation):
 def parse_line(raw_line):
     """Parse a line of raw data, convert to a tuple of 5 fields to present the 5 fields of cassandra DB.
     The first 4 fields are  chromosome, position, ref, alt. The last field (a string) represents
-    the list of annotations compatible with CQL syntax
+    the list of annotations compatible with CQL syntax.
 
     For example, an input:
     1	901994	G	A	CSQ=A|downstream_gene_variant|MODIFIER|KLHL17|ENSG00000187961|Transcript|ENST00000463212|
@@ -141,7 +139,6 @@ def insert(raw_line, db_session):
     """Parse a raw line to compose CQL query and execute it to insert the line"""
     parsed = parse_line(raw_line)
     if parsed is None:
-        # print "Bad line: %s", raw_line
         return False
     insert_statement = db_session.prepare(
         "INSERT INTO " + TABLE +
@@ -149,7 +146,8 @@ def insert(raw_line, db_session):
         " (?, ?, ?, ?, " + parsed[4] + ")"
     )
     query = insert_statement.bind(parsed[:4])
-    query.consistency_level = ConsistencyLevel.ALL
+    query.consistency_level = ConsistencyLevel.ALL #Require ALL for consistency level.
+
     # example query:
     # INSERT INTO vep_db (chrom, pos, ref, alt, annotations) VALUES
     # ('1', 901994, 'G', 'A', [{vep: 'foo', lof:'', lof_filter:'', lof_flags: '', lof_info: '', other_plugins: ''}])
@@ -159,7 +157,7 @@ def insert(raw_line, db_session):
 
 def populate_db(t_idx):
     """
-    Run by one thread to populate database
+    Run by one thread to populate the database.
     :param t_idx: the thread index, in range(0, threads)
     :return: None
     """
