@@ -6,7 +6,7 @@
 
 Dage is a cloud-based distributed effect annotator for known human genetic variants aimed at reproducibility, scalability, flexibility, and cost-efficiency.  Dage defines fast and cost-efficient annotation of genetic variants by integrating Apache Spark with a distributed Cassandra database containing cached variant effects (VEPDB).
 
-p align="center">
+<p align="center">
 <img src="https://raw.githubusercontent.com/bryketos/DAGE/master/images/DAGE_diagram.png" width=300 />
 </p>
 
