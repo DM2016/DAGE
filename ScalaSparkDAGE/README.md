@@ -1,6 +1,9 @@
 ## Distributed Annotation of Genetic Effects
 ### A reproducible, cloud-based annotator for the consequences (effects) of human genetic variation.
 
+#### Dichen Li and Brian S. Cole, PhD
+#### Institute for Biomedical Informatics, University of Pennsylvania Perelman School of Medicine, Philadelphia PA
+
 DAGE is a repository of programs written in Scala, Python, and bash that provide distributed genetic variant effect annotation operations using Apache Spark and a cloud-hosted, user-instantiated or user-reinstanted (using AMI images for reproducibility) Cassandra cluster which hosts a database of variant effects (VEPDB).
 
 > IMPORTANT!
