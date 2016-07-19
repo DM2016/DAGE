@@ -69,13 +69,6 @@ def launch_cluster(
         )
     print "All instances ready"
 
-    # instances = map(
-    #     lambda id: Ec2Instance(
-    #         ec2_client=ec2_client, instance_id=id,
-    #         user_name=cluster['user_name'], ssh_key=ssh_key
-    #     ), ['i-8d73ec10', 'i-8e73ec13']
-    # )
-
     print "Sending scripts to remote nodes"
     seeds = '"' + ','.join(map(
         lambda inst: inst.get_private_ip(), instances
@@ -91,9 +84,9 @@ def launch_cluster(
         sys.stdout.write(''.join(stdout_lines))
         sys.stderr.write(''.join(stderr_lines))
         print "Bootstrapping " + instance.get_instance_id() + " done"
-        time.sleep(3) # do it gently, don't start all nodes at once
+        time.sleep(3) # Do it gently, don't start all nodes at once.
 
-    time.sleep(60) # wait for cassandra bootstrap
+    time.sleep(60) # Wait for cassandra bootstrap.
     print "nodetool status report for the cluster:"
     for index, instance in enumerate(instances):
         stdout_lines, stderr_lines = instance.ssh_command("sudo nodetool status")
