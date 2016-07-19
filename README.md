@@ -4,11 +4,9 @@
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
 
-Dage is a cloud-based distributed effect annotator for known human genetic variants aimed at reproducibility, scalability, flexibility, and cost-efficiency.  Dage defines fast and cost-efficient annotation of genetic variants by integrating Apache Spark with a distributed Cassandra database containing cached variant effects (VEPDB).
+DAGE is a cloud-based distributed effect annotator for known human genetic variants aimed at reproducibility, scalability, flexibility, and cost-efficiency.  Dage defines fast and cost-efficient annotation of genetic variants by integrating Apache Spark with a distributed Cassandra database containing cached variant effects (VEPDB).
 
-<p align="center">
-<img src="https://raw.githubusercontent.com/bryketos/DAGE/master/images/DAGE_diagram.png" width=300 />
-</p>
+![logo](https://github.com/bryketos/DAGE/master/DAGE_diagram.png)
 
 This repository is divided into three components: ScalaSparkDAGE contains the Scala and Spark code for performing distributed annotation of human genetic variants read from AWS S3 storage, PySparkCassandra contains Python and CQL code to populate a Cassandra database with precomputed genetic variant effect annotations (e.g. from VEP, hence "VEPDB"), and DageBoot contains an automated Cassandra cluster launching utility.
 
