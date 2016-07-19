@@ -6,4 +6,6 @@ NOTE: this populator currently only supports GZIP-compressed input data.  The fo
 
 An example input line:
 
-1 123456  A G CSQ=G......
+CSQ=A|downstream_gene_variant|MODIFIER|KLHL17|ENSG00000187961|Transcript|ENST00000463212|retained_intron|||||||||||4136|1|HGNC|24023|1|2|3|4
+
+Multiple comma-separated annotations are all handled separately and a list structure is built.
