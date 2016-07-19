@@ -2,8 +2,7 @@ DAGE is a series of programs written in Scala that provide distributed genetic v
 
 ## Distributed Annotation of Genetic Effects
 
-DAGE reads data in VCF format and builds a resilient distributed dataset (RDD), an abstraction provided by Apache Spark for distributed computation.  Methods for querying a Cassandra database containing variant effect annotations are provided.  
-These queries utilize a unique key that represents a genetic variant:
+DAGE reads data in VCF format and builds a resilient distributed dataset (RDD), an abstraction provided by Apache Spark for distributed computation.  Methods for querying a Cassandra database containing variant effect annotations are provided by the spark-cassandra-connector.  These queries utilize a unique key that represents a genetic variant:
 
 *chromosome position reference_allele alternative_allele*
 
