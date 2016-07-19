@@ -1,6 +1,6 @@
 # Distributed Annotation of Genetic Effects
 ## Dichen Li, Brian S. Cole PhD, and Jason H. Moore PhD FACMI
-## The Institute for Biomedical Informatics, University of Pennsylvania Perelman School of Medicine, Philadelphia, PA
+### The Institute for Biomedical Informatics, University of Pennsylvania Perelman School of Medicine, Philadelphia, PA
 
 Dage is a cloud-based distributed effect annotator for known human genetic variants aimed at reproducibility, scalability, flexibility, and cost-efficiency.  Dage defines fast and cost-efficient annotation of genetic variants by integrating Apache Spark with a distributed Cassandra database containing cached variant effects (VEPDB).
 
