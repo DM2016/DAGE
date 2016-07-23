@@ -4,4 +4,5 @@ project/project/target/*
 /src/main/scala/Secrets.scala
 spsubmit.sh
 assembleAWS.sh
+runningSequence.sh
 runningSequence2.sh
