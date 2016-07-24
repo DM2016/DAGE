@@ -4,7 +4,7 @@ import sbt.Keys._
 
 lazy val root = (project in file(".")).
   settings(
-    name := "Simple_Project",
+    name := "DAGE",
     version := "0.0.1",
     scalaVersion := "2.10.5",
     mainClass in Compile := Some("Main")
