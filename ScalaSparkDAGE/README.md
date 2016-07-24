@@ -46,7 +46,7 @@ And the effects of the alternative allele for that genetic variant are returned 
 ## Run on AWS EMR (Elastic MapReduce)
 
 1. You need to have an AWS account (with necessary permissions), AWS access keys (access key ID and secret access key, see <http://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys>).
-2. The instructions below are executed by AWS CLI (<https://aws.amazon.com/cli/>). You may choose to use AWS SDKs or website console as well. 
+2. Install the AWS CLI (<https://aws.amazon.com/cli/>).  
 3. Launch a VEPDB cluster manually or use Dageboot (see <https://github.com/bryketos/DAGE/tree/master/DageBoot>), get the private IP address of any of the VEPDB EC2 instances.
 4. Upload the DAGE jar built above to an S3 bucket. 
 5. Create an EC2 ssh key pair on AWS. Please see the instructions on <http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html>
@@ -72,7 +72,7 @@ And the effects of the alternative allele for that genetic variant are returned 
     --profile <aws profile> --region us-east-1
     ```
     
-    Explanations: 
+    **Explanations:** 
         
     subnet_id: There should be default VPC and subnet associated with your account. See <http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/default-vpc.html>. It is highly recommended to use the same subnet as the VEPDB.
     
@@ -115,9 +115,9 @@ And the effects of the alternative allele for that genetic variant are returned 
 
 ## Run on your own infrastructure
 
-The jar created in the step above can be submitted to any Spark cluster to run. You may need to manually copy the DAGE jar to the file system available to Spark. Please refer to <http://spark.apache.org/docs/latest/submitting-applications.html> for general spark-submit instructions.
+The jar built in the step above can be submitted to any Spark cluster to run. You may need to manually copy the DAGE jar to the file system available to Spark. Please refer to <http://spark.apache.org/docs/latest/submitting-applications.html> for general spark-submit instructions.
 
-The job launch script template is below:
+The job launch script template is below (you may need to add sudo depending on your system):
 
 ```bash
 <path/to/spark/home>/bin/spark-submit --class Main <path/to/DAGE-assembly-x.x.x.jar> -i <FileSystemProtocol://><path/to/input/VCF/files> -o <fs-protocol://><path/to/output/directory> -h <VEPDB ip> <other options>
