@@ -97,7 +97,6 @@ object Main {
 
     println("Missing keys count: " + miss.count())
     println("Output lines count: " + output.count())
-//    println(miss.collect().mkString("\n"))
     if (jobConfig.missingKeysS3Dir != null) {
       miss.saveAsTextFile(jobConfig.missingKeysS3Dir + jobConfig.jobName)
     }
@@ -114,18 +113,3 @@ object Main {
 
 }
 
-//TODO update documentation
-//TODO refactor code for efficiency and good structure
-//TODO mark all lines that are matched after flip strand or allele
-
-
-//TODO use a more professional way to document and track TODO lists
-//TODO allow user to decide if they want to match strand and allele flipped annotation
-//TODO add info to indicate if the annotation is done from strand/allele flipping
-//TODO check to make sure all the directories in arguments exist before proceed to real job
-//TODO a cheap way to avoid empty partitions
-//TODO allow user to specify number of partitions in the final output
-//TODO allow user to decide if they want to output all missed keys (it defaults to yes now)
-//TODO allow user to access S3 by an AWS profile rather than key pair (is it even possible?)
-//TODO write unit test and/or integration test
-//TODO in class Config, change all fields that could be null to Option[Type]

@@ -30,13 +30,3 @@ if __name__ == "__main__":
     main()
 
 
-
-# very important to have
-# TODO: implement function to restart existing cluster (user need to provide instance ids)
-# TODO: launch spark with the information of the DB
-# TODO: use command line to offer parameters: instance type, volume size
-# TODO: In a cassandra cluster with opscenter, set up cluster info file so that opscenter works out of box
-
-# maybe in the long term
-# TODO: support mutliple regions
-# TODO: create custom VPC and subnet for cassandra
