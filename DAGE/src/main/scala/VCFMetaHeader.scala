@@ -9,8 +9,8 @@ object VCFMetaHeader {
   /**
     * insert VEP annotation meta data to the original VCF metadata and header lines
     * @param metaHeader metadata and header lines (starting with '#' or '##') of vcf file
-    * @param vepMeta metadata for VEP annotation
-    * @return VCF header with VEP metadata lines, multiple lines in one string
+    * @param vepMeta metadata lines for VEP annotation
+    * @return VCF header with VEP metadata lines in one giant string that contains multiple lines
     */
   def processMetaAndHeader(metaHeader: RDD[String], vepMeta: RDD[String]): String = {
     val (meta, header) = metaHeader.splitBy(_.startsWith("##"))

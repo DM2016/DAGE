@@ -31,5 +31,15 @@ case class AnnotationFields(cassandraUDTValue: UDTValue) {
   /**
     * @return if this annotation field has high confidence (HC) in the lof_filter field
     */
-  def isHighConfidence: Boolean = lof_filter.equals("HC")
+  def isHighConfidenceLof: Boolean = lof_filter.equals("HC")
 }
+
+/*
+ * some code examples of interacting with Spark-Cassandra-Connector and UDTValue class (for future coding reference):
+ *  val row: CassandraRow = sc.cassandraTable(jobConfig.keySpace, jobConfig.tableName).first
+ *  println(row)
+ *  println(row.get[String]("ref")) //prints the ref column
+ *  val a: List[UDTValue] = row.get[List[UDTValue]]("annotations")
+ *  println(a.head) //prints the first UDTValue representing the "vep_annotation" user defined type
+ *  println(a.head.get[String]("vep"))
+ */

@@ -12,7 +12,7 @@ object Main {
     * parse command line arguments by scopt
     * https://github.com/scopt/scopt
     */
-  val parser = new scopt.OptionParser[Config]("scopt") {
+  private val parser = new scopt.OptionParser[Config]("scopt") {
     head("dage", "0.0.1")
     note("DAGE: Distributed Annotation of Genetic Effects\n")
 
@@ -66,7 +66,7 @@ object Main {
     help("help") text "prints this usage text"
   }
 
-  def runSpark(jobConfig: Config): Unit = {
+  private def runSpark(jobConfig: Config): Unit = {
     val sparkConf = new SparkConf(true).setAppName("DAGE VCF VEP annotation")
       .set("spark.cassandra.connection.host", jobConfig.host)
       // about consistency levels: https://goo.gl/nzu9JW, https://goo.gl/gn16lK

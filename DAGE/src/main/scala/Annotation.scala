@@ -32,7 +32,7 @@ object Annotation {
     }
   }
 
-  def queryHelper(annotated: RDD[VepVCFLine], unannotated: RDD[RawVCFLine],
+  private def queryHelper(annotated: RDD[VepVCFLine], unannotated: RDD[RawVCFLine],
                   transformFunctions: List[RawVCFLine => RawVCFLine], jobConfig: Config)
   : (RDD[VepVCFLine], RDD[RawVCFLine]) = transformFunctions match {
     case Nil => (annotated, unannotated)
@@ -56,20 +56,21 @@ object Annotation {
   /**
     * Try to annotate the raw VCF lines by VepDB query.
     * Try each of the transform functions in a sequence to convert the original VCF line
-    * to different forms if the previous form fails to find an annotation in DB
+    * to different forms if the previous form fails to find an annotation in DB. The functions are applied in the order
+    * specified by the transformFunctions list.
     *
-    * @param rawVCFLines
-    * @param transformFunctions
-    * @param jobConfig
-    * @param sc
-    * @return
+    * @param rawVCFLines RDD of un-annotaed VCF lines
+    * @param transformFunctions a list of functions to transform each RawVCFLine to another.
+    * @param jobConfig The global job config object
+    * @param sc spark context
+    * @return a pair of annotated VCF lines and unannotated VCF lines
     */
-  def query(rawVCFLines: RDD[RawVCFLine], transformFunctions: List[RawVCFLine => RawVCFLine],
+  private def query(rawVCFLines: RDD[RawVCFLine], transformFunctions: List[RawVCFLine => RawVCFLine],
             jobConfig: Config, sc: SparkContext): (RDD[VepVCFLine], RDD[RawVCFLine]) =
     queryHelper(sc.emptyRDD, rawVCFLines, transformFunctions, jobConfig)
 
 
-  def getFlipFunctions(jobConfig: Config): List[RawVCFLine => RawVCFLine] = {
+  private def getFlipFunctions(jobConfig: Config): List[RawVCFLine => RawVCFLine] = {
     var flipFunctions = List((line: RawVCFLine) => line)
     if (jobConfig.flipStrand) {
       flipFunctions = flipFunctions :+ ((line: RawVCFLine) => line.strandFlippedVCFLine)
@@ -111,7 +112,7 @@ object Annotation {
     var vcfLinesAfterAnnotation = annotated.asInstanceOf[RDD[VCFLine]]
     //filter lines with high lof confidence
     if (jobConfig.filterHighConfidence) {
-      vcfLinesAfterAnnotation = vcfLinesAfterAnnotation.filter(_.isHighConfidence)
+      vcfLinesAfterAnnotation = vcfLinesAfterAnnotation.filter(_.isHighConfidenceLof)
     } else {
       vcfLinesAfterAnnotation = vcfLinesAfterAnnotation ++ unannotated.asInstanceOf[RDD[VCFLine]]
     }
@@ -119,7 +120,7 @@ object Annotation {
       vcfLinesAfterAnnotation = vcfLinesAfterAnnotation.sortBy(vcfLine => vcfLine.position)
     }
 
-    //Convert to RDD of body lines of VEP VCF file
+    //After annotation, convert lines back to String format
     var vepVcfBody: RDD[String] = vcfLinesAfterAnnotation.map(_.toVCFString)
     var miss = unannotated.map(_.toVCFString)
 
@@ -149,13 +150,3 @@ object Annotation {
 
 }
 
-
-/*
- * some examples of vepDB_v2 data to scala data structure conversion (just for future reference):
- *  val row: CassandraRow = sc.cassandraTable(jobConfig.keySpace, jobConfig.tableName).first
- *  println(row)
- *  println(row.get[String]("ref")) //prints the ref column
- *  val a: List[UDTValue] = row.get[List[UDTValue]]("annotations")
- *  println(a.head) //prints the first UDTValue representing the "vep_annotation" user defined type
- *  println(a.head.get[String]("vep"))
- */

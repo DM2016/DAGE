@@ -14,7 +14,7 @@ object VCFLineTypes {
   abstract class VCFLine {
 
     /*
-      * @return the string representation of the [[vepKey]]
+      * @return the string representation of the key used to query VEPDB
       */
     def extractKeyString: String // = vepKey.toString
 
@@ -31,12 +31,12 @@ object VCFLineTypes {
     /**
       * @return if the line has high confident loss of function, judged by lof_filter field
       */
-    def isHighConfidence: Boolean
+    def isHighConfidenceLof: Boolean
   }
 
 
   /**
-    * A line of data in VCF file that's directly from input file. It has 8 fixed columns (chrom, pos, id...)
+    * Represents a VCF line that's directly from input VCF file. It has 8 fixed columns (chrom, pos, id...)
     * and any number of genotypes data from the study
     *
     * @param chrom     chromosome
@@ -56,29 +56,23 @@ object VCFLineTypes {
 
     override def toVCFString = Array(chrom, pos, id, ref, alt, qual, filter, info, format, genotypes).mkString("\t")
 
-    override def isHighConfidence = false
+    override def isHighConfidenceLof = false
 
-    /**
-      * VepDB key, to query from the DB
-      */
     override def extractKeyString: String = "%s\t%d\t%s\t%s".format(chrom, pos, ref, alt)
 
-    /**
-      * @return the position field in VCF file
-      */
     override def position: Long = pos
 
-    def flipStrand(allele: Char): Char = allele match {
+    private def flipStrand(allele: Char): Char = allele match {
       case 'A' => 'T'
       case 'T' => 'A'
       case 'C' => 'G'
       case 'G' => 'C'
     }
 
-    lazy val flippedRef = ref.map(flipStrand)
-    lazy val flippedAlt = alt.map(flipStrand)
+    private lazy val flippedRef = ref.map(flipStrand)
+    private lazy val flippedAlt = alt.map(flipStrand)
 
-    lazy val flippedGenotypes: String = {
+    private lazy val flippedGenotypes: String = {
       val genotypePattern = """(.*)\|(.*)""".r
       def flipGenotype(genotype: String): String = genotype match {
         case genotypePattern(left, right) => right + "|" + left
@@ -96,11 +90,11 @@ object VCFLineTypes {
 
 
   /**
-    * a line of data in VCF file that's already annotated
+    * Represents a VCF line that's already annotated
     *
     * @param rawVCFLine          the original line
-    * @param annotationsUDTValues the list of annotations directly pulled from VepDB.
-    *                            [[UDTValue]] is defined by SparkCassandraConnector. Here it represents the
+    * @param annotationsUDTValues the list of annotations directly pulled from VepDB. UDT: User Defined Type
+    *                            [[UDTValue]] is a class defined by SparkCassandraConnector. Here it represents the
     *                            (vep, lof, lof_filter, lof_flags, lof_info, other_plugins)
     *                            data structure in Cassandra
     */
@@ -120,17 +114,14 @@ object VCFLineTypes {
       rawVCFLine.info + ";" + annotations.mkString(","),
       rawVCFLine.format, rawVCFLine.genotypes).mkString("\t")
 
-    override def isHighConfidence = annotations.exists(_.isHighConfidence)
+    override def isHighConfidenceLof = annotations.exists(_.isHighConfidenceLof)
 
-    /**
-      * VepDB key, to query from the DB
-      */
     override def extractKeyString: String = rawVCFLine.extractKeyString
   }
 
 
   /**
-    * parse VCF line by regex to extract fields from raw string
+    * Takes in a line from VCF file as string, parses it, and generates a [[RawVCFLine]] object.
     *
     * @param line         a VCF data line in original string form
     * @param vcfLineRegex provided, the regex to parse the VCF line

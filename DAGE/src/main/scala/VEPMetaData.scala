@@ -9,7 +9,6 @@ object VEPMetaData {
       "polyphen=2.2.2 regbuild=13 assembly=GRCh37.p13 genebuild=2011-04 " +
       "gencode=GENCODE 19",
 
-    //The orders of them are random from VEP
     "##LoF_flags=Possible warning flags for LoF",
 
     "##LoF_filter=Reason for LoF not being HC",
