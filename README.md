@@ -3,6 +3,7 @@
 ### The Institute for Biomedical Informatics, University of Pennsylvania Perelman School of Medicine, Philadelphia, PA
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
+[Chat with DAGE developers in Gitter!](https://gitter.im/bryketos/DAGE)
 
 DAGE is a cloud-based distributed effect annotator for known human genetic variants aimed at reproducibility, scalability, flexibility, and cost-efficiency.  Dage defines fast and cost-efficient annotation of genetic variants by integrating Apache Spark with a distributed Cassandra database containing cached variant effects (VEPDB).
 
